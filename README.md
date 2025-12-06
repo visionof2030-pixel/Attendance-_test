@@ -1,4 +1,4 @@
-
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
@@ -1418,11 +1418,11 @@ function generatePeriodData() {
                     const hasStar = Math.random() > 0.7;
                     const evaluations = [];
                     
-                    // 5 خانات للتقييم
+                    // 5 خانات للتقييم (مطابقة للأعمدة في الصورة)
                     for (let i = 0; i < 5; i++) {
                         // إذا كان الطالب مميزاً (لديه نجمة)، فاحتمال الحضور أعلى
                         const isPresent = hasStar ? Math.random() > 0.1 : Math.random() > 0.3;
-                        evaluations.push(isPresent ? "✔" : "✖");
+                        evaluations.push(isPresent ? "✓" : "✗");
                     }
                     
                     periodAttendanceData[dateKey].classes[className].push({
@@ -1437,6 +1437,14 @@ function generatePeriodData() {
     
     savePeriodAttendanceData();
     alert(`تم إنشاء بيانات تجريبية لـ ${Object.keys(periodAttendanceData).length} يوم دراسي`);
+    
+    // اختبار التصدير تلقائياً
+    setTimeout(() => {
+        const testExport = confirm("تم إنشاء البيانات بنجاح. هل تريد تصديرها إلى Excel الآن؟");
+        if (testExport) {
+            exportPeriodToExcel();
+        }
+    }, 500);
 }
 
 // تحويل الأرقام الإنجليزية إلى عربية
@@ -1725,11 +1733,11 @@ function fillClassTable(className) {
         row.innerHTML = `
             <td>${index + 1}</td>
             <td>${student}</td>
-            <td><div class="evaluation-cell present" onclick="toggleEvaluation(this)">✔</div></td>
-            <td><div class="evaluation-cell present" onclick="toggleEvaluation(this)">✔</div></td>
-            <td><div class="evaluation-cell present" onclick="toggleEvaluation(this)">✔</div></td>
-            <td><div class="evaluation-cell present" onclick="toggleEvaluation(this)">✔</div></td>
-            <td><div class="evaluation-cell present" onclick="toggleEvaluation(this)">✔</div></td>
+            <td><div class="evaluation-cell present" onclick="toggleEvaluation(this)">✓</div></td>
+            <td><div class="evaluation-cell present" onclick="toggleEvaluation(this)">✓</div></td>
+            <td><div class="evaluation-cell present" onclick="toggleEvaluation(this)">✓</div></td>
+            <td><div class="evaluation-cell present" onclick="toggleEvaluation(this)">✓</div></td>
+            <td><div class="evaluation-cell present" onclick="toggleEvaluation(this)">✓</div></td>
             <td><div class="star-cell" onclick="toggleStar(this)">☆</div></td>
         `;
         tbody.appendChild(row);
@@ -1777,14 +1785,14 @@ function showAllClasses() {
     showClass('all');
 }
 
-// تبديل حالة التقييمات (✔ و ✖)
+// تبديل حالة التقييمات (✓ و ✗)
 function toggleEvaluation(cell) {
-    if (cell.innerHTML === "✔") {
-        cell.innerHTML = "✖";
+    if (cell.innerHTML === "✓") {
+        cell.innerHTML = "✗";
         cell.classList.remove('present');
         cell.classList.add('absent');
     } else {
-        cell.innerHTML = "✔";
+        cell.innerHTML = "✓";
         cell.classList.remove('absent');
         cell.classList.add('present');
     }
@@ -1884,12 +1892,12 @@ function randomAttendance() {
             
             evaluationCells.forEach(cell => {
                 if (hasStar) {
-                    cell.innerHTML = "✔";
+                    cell.innerHTML = "✓";
                     cell.classList.remove('absent');
                     cell.classList.add('present');
                 } else {
-                    cell.innerHTML = Math.random() > 0.3 ? "✔" : "✖";
-                    if (cell.innerHTML === "✔") {
+                    cell.innerHTML = Math.random() > 0.3 ? "✓" : "✗";
+                    if (cell.innerHTML === "✓") {
                         cell.classList.remove('absent');
                         cell.classList.add('present');
                     } else {
@@ -1951,7 +1959,7 @@ function resetAll() {
     if (!confirmAction) return;
     
     document.querySelectorAll('.evaluation-cell').forEach(cell => {
-        cell.innerHTML = "✔";
+        cell.innerHTML = "✓";
         cell.classList.remove('absent');
         cell.classList.add('present');
     });
@@ -1979,7 +1987,7 @@ function showStatistics() {
     let totalStudents = 0;
     
     document.querySelectorAll('.evaluation-cell').forEach(cell => {
-        if (cell.innerHTML === "✔") presentCount++;
+        if (cell.innerHTML === "✓") presentCount++;
         else absentCount++;
     });
     
@@ -2071,38 +2079,52 @@ function exportToExcel() {
     const hijriDateForExcel = `${convertToArabicNumbers(hijriDate.day)} ${hijriDate.monthName} ${convertToArabicNumbers(hijriDate.year)}هـ`;
     const currentWeekDay = weekDays[selectedDate.getDay()];
     
-    // إضافة كل صف كورقة منفصلة
+    // البحث عن رقم الأسبوع للتاريخ الحالي
+    let currentWeek = 1;
+    studyWeeks.forEach(week => {
+        week.days.forEach(day => {
+            if (day.gregorian === `${selectedDate.getDate()}/${selectedDate.getMonth()+1}/${selectedDate.getFullYear()}`) {
+                currentWeek = week.week;
+            }
+        });
+    });
+    
+    const sheetData = [];
+    
+    // رأس التقرير (مطابق للصورة)
+    sheetData.push(["تقرير الأساسي الدراسية 2025..."]);
+    sheetData.push([""]);
+    sheetData.push(["تقرير التحضير للأسابيع الدراسية"]);
+    sheetData.push(["املعلم: فهـد الخالدي - املادة: اللغة الإنجليزية"]);
+    sheetData.push(["الفصل الدراسي الأول 1447"]);
+    sheetData.push(["املدرسة: سعيد بن العاصم املتوسطة"]);
+    sheetData.push(["عدد الأساسي: 18 أسبوع (من 1 إلى 13 ثم 15 إلى 19)"]);
+    sheetData.push(["تاريخ التصديق: ٢ ديسمبر ٢٠٢٦"]);
+    sheetData.push([""]);
+    sheetData.push([""]);
+    
+    // عنوان الأسبوع
+    sheetData.push(["### الأسوع " + currentWeek]);
+    sheetData.push([""]);
+    
+    // عنوان اليوم
+    sheetData.push([`#### (${hijriDateForExcel}) ${gregorianDateForExcel}- ${currentWeekDay}`]);
+    sheetData.push([""]);
+    
+    // إضافة بيانات كل صف
     for (const className in studentsData) {
-        const sheetData = [];
-        
-        // رأس التقرير (مطابق للصورة)
-        sheetData.push(["تقرير الأساسي الدراسية 2025..."]);
-        sheetData.push([""]);
-        sheetData.push(["تقرير التحضير للأسابيع الدراسية"]);
-        sheetData.push(["المعلم: فهـد الخالدي - المادة: اللغة الإنجليزية"]);
-        sheetData.push([`الفصل الدراسي: ${document.getElementById('currentSemesterInfo').textContent}`]);
-        sheetData.push([`المدرسة: سعيد بن العاص المتوسطة`]);
-        sheetData.push([`عدد الأساسي: 18 أسبوع (من 1 إلى 13 ثم 15 إلى 19)`]);
-        sheetData.push([`تاريخ التصديق: ${hijriDateForExcel} (${gregorianDateForExcel})`]);
-        sheetData.push([""]);
-        sheetData.push([""]);
-        
-        // عنوان الأسبوع واليوم
-        sheetData.push([`الأسبوع 1`]);
-        sheetData.push([`(${hijriDateForExcel}) ${gregorianDateForExcel} - ${currentWeekDay}`]);
-        sheetData.push([`الصف ${className}: ${studentsData[className].length} طالب`]);
+        sheetData.push([`**الصف ${className}: ${studentsData[className].length} طالب**`]);
         sheetData.push([""]);
         
         // رأس الجدول (مطابق للصورة)
         sheetData.push([
-            "م", 
+            "مكونات", 
             "معلومات وتنشئة", 
             "التعريفات", 
             "الواجهات", 
             "الحضور", 
             "الإسهم", 
-            "الصف", 
-            "الاسم"
+            "الصف"
         ]);
         
         // بيانات الطلاب
@@ -2110,51 +2132,54 @@ function exportToExcel() {
             // الحصول على حالة التقييم من الجدول المعروض
             let evaluations = [];
             const table = document.getElementById(`tbody-${className}`);
-            if (table) {
+            if (table && table.rows[index]) {
                 const row = table.rows[index];
-                if (row) {
-                    const cells = row.cells;
-                    evaluations = [
-                        cells[2]?.querySelector('.evaluation-cell')?.textContent || "✔",
-                        cells[3]?.querySelector('.evaluation-cell')?.textContent || "✔",
-                        cells[4]?.querySelector('.evaluation-cell')?.textContent || "✔",
-                        cells[5]?.querySelector('.evaluation-cell')?.textContent || "✔",
-                        cells[6]?.querySelector('.evaluation-cell')?.textContent || "✔"
-                    ];
-                }
+                evaluations = [
+                    row.cells[2]?.querySelector('.evaluation-cell')?.textContent || "✓",
+                    row.cells[3]?.querySelector('.evaluation-cell')?.textContent || "✓",
+                    row.cells[4]?.querySelector('.evaluation-cell')?.textContent || "✓",
+                    row.cells[5]?.querySelector('.evaluation-cell')?.textContent || "✓",
+                    row.cells[6]?.querySelector('.evaluation-cell')?.textContent || "✓"
+                ];
+            } else {
+                // بيانات افتراضية
+                evaluations = ["✓", "✓", "✓", "✓", "✓"];
             }
             
-            sheetData.push([
-                index + 1,
-                evaluations[0] || "✔",
-                evaluations[1] || "✔",
-                evaluations[2] || "✔",
-                evaluations[3] || "✔",
-                evaluations[4] || "✔",
-                className,
-                student
-            ]);
+            const row = [
+                evaluations[0],
+                evaluations[1],
+                evaluations[2],
+                evaluations[3],
+                evaluations[4],
+                student,
+                index + 1
+            ];
+            sheetData.push(row);
         });
         
-        // إنشاء الورقة
-        const worksheet = XLSX.utils.aoa_to_sheet(sheetData);
-        
-        // تنسيق الأعمدة
-        const colWidths = [
-            { wch: 5 },   // م
-            { wch: 10 },  // معلومات وتنشئة
-            { wch: 10 },  // التعريفات
-            { wch: 10 },  // الواجهات
-            { wch: 10 },  // الحضور
-            { wch: 10 },  // الإسهم
-            { wch: 8 },   // الصف
-            { wch: 40 }   // الاسم
-        ];
-        worksheet['!cols'] = colWidths;
-        
-        // إضافة الورقة إلى المصنف
-        XLSX.utils.book_append_sheet(workbook, worksheet, `الصف ${className}`);
+        sheetData.push([""]);
+        sheetData.push(["---"]);
+        sheetData.push([""]);
     }
+    
+    // إنشاء الورقة
+    const worksheet = XLSX.utils.aoa_to_sheet(sheetData);
+    
+    // تنسيق الأعمدة
+    const colWidths = [
+        { wch: 10 },  // مكونات
+        { wch: 15 },  // معلومات وتنشئة
+        { wch: 12 },  // التعريفات
+        { wch: 12 },  // الواجهات
+        { wch: 10 },  // الحضور
+        { wch: 35 },  // الإسهم (الأسماء)
+        { wch: 8 }    // الصف
+    ];
+    worksheet['!cols'] = colWidths;
+    
+    // إضافة الورقة إلى المصنف
+    XLSX.utils.book_append_sheet(workbook, worksheet, `تقرير اليوم`);
     
     // تصدير الملف
     const fileName = `تقرير_حضور_${gregorianDateForExcel.replace(/\//g, '-')}.xlsx`;
@@ -2163,7 +2188,7 @@ function exportToExcel() {
     alert(`تم تصدير التقرير بنجاح!\n\nاسم الملف: ${fileName}`);
 }
 
-// تصدير فترة كاملة إلى Excel - إصدار محسّن
+// تصدير فترة كاملة إلى Excel - بنفس تنسيق الصورة المرفقة
 function exportPeriodToExcel() {
     if (!adminActive) {
         alert('يجب تفعيل وضع الإدارة أولا');
@@ -2179,152 +2204,168 @@ function exportPeriodToExcel() {
     const confirmAction = confirm(`هل تريد تصدير بيانات التحضير للفترة الكاملة؟\n\nعدد الأيام: ${Object.keys(periodAttendanceData).length} يوم`);
     if (!confirmAction) return;
     
-    // إنشاء مصنف Excel متعدد الأوراق
+    // إنشاء مصنف Excel متعدد الأوراق (كل أسبوع في ورقة)
     const workbook = XLSX.utils.book_new();
     
-    // فرز التواريخ
-    const sortedDates = Object.keys(periodAttendanceData).sort();
+    // تجميع البيانات حسب الأسابيع
+    const weeksData = {};
     
-    sortedDates.forEach((dateKey, index) => {
-        const dayData = periodAttendanceData[dateKey];
+    studyWeeks.forEach(week => {
+        const weekKey = `week_${week.week}`;
+        weeksData[weekKey] = {
+            weekNumber: week.week,
+            days: [],
+            data: {}
+        };
         
-        // تحويل التاريخ من YYYY-MM-DD إلى DD/MM/YYYY
-        const gregorianParts = dayData.gregorianDate.split('/');
-        const formattedGregorian = `${gregorianParts[0]}/${gregorianParts[1]}/${gregorianParts[2]}`;
-        
-        // إضافة كل صف في اليوم كمجموعة
-        for (const className in dayData.classes) {
-            const sheetData = [];
-            
-            // رأس التقرير (مطابق للصورة)
-            sheetData.push(["تقرير الأساسي الدراسية 2025..."]);
-            sheetData.push([""]);
-            sheetData.push(["تقرير التحضير للأسابيع الدراسية"]);
-            sheetData.push(["المعلم: فهـد الخالدي - المادة: اللغة الإنجليزية"]);
-            sheetData.push([`الفصل الدراسي: ${document.getElementById('currentSemesterInfo').textContent}`]);
-            sheetData.push([`المدرسة: سعيد بن العاص المتوسطة`]);
-            sheetData.push([`عدد الأساسي: 18 أسبوع (من 1 إلى 13 ثم 15 إلى 19)`]);
-            sheetData.push([`تاريخ التصديق: ${dayData.hijriDate} (${formattedGregorian})`]);
-            sheetData.push([""]);
-            sheetData.push([""]);
-            
-            // عنوان الأسبوع واليوم
-            sheetData.push([`الأسبوع 1`]);
-            sheetData.push([`(${dayData.hijriDate}) ${formattedGregorian} - ${dayData.dayInfo}`]);
-            sheetData.push([`الصف ${className}: ${dayData.classes[className].length} طالب`]);
-            sheetData.push([""]);
-            
-            // رأس الجدول
-            sheetData.push([
-                "م", 
-                "معلومات وتنشئة", 
-                "التعريفات", 
-                "الواجهات", 
-                "الحضور", 
-                "الإسهم", 
-                "الصف", 
-                "الاسم"
-            ]);
-            
-            // بيانات الطلاب
-            dayData.classes[className].forEach((student, idx) => {
-                sheetData.push([
-                    idx + 1,
-                    student.evaluations[0] || "✔",
-                    student.evaluations[1] || "✔",
-                    student.evaluations[2] || "✔",
-                    student.evaluations[3] || "✔",
-                    student.evaluations[4] || "✔",
-                    className,
-                    student.studentName
-                ]);
-            });
-            
-            // إنشاء الورقة
-            const worksheet = XLSX.utils.aoa_to_sheet(sheetData);
-            
-            // تنسيق الأعمدة
-            const colWidths = [
-                { wch: 5 },   // م
-                { wch: 10 },  // معلومات وتنشئة
-                { wch: 10 },  // التعريفات
-                { wch: 10 },  // الواجهات
-                { wch: 10 },  // الحضور
-                { wch: 10 },  // الإسهم
-                { wch: 8 },   // الصف
-                { wch: 40 }   // الاسم
-            ];
-            worksheet['!cols'] = colWidths;
-            
-            // اسم الورقة: اليوم_الصف
-            const sheetName = `${dayData.dayInfo}_${className}`.substring(0, 31);
-            XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
-        }
+        week.days.forEach(day => {
+            const dateKey = day.gregorian.split('/').reverse().join('-');
+            if (periodAttendanceData[dateKey]) {
+                weeksData[weekKey].days.push({
+                    dayInfo: day.day,
+                    hijri: day.hijri,
+                    gregorian: day.gregorian,
+                    data: periodAttendanceData[dateKey]
+                });
+            }
+        });
     });
     
-    // إنشاء ورقة ملخصة
-    createSummarySheet(workbook, sortedDates);
-    
-    // تصدير الملف
-    const fileName = `تقرير_الفترة_الكاملة_${new Date().toISOString().split('T')[0]}.xlsx`;
-    XLSX.writeFile(workbook, fileName);
-    
-    alert(`✅ تم تصدير تقرير الفترة الكاملة بنجاح!\n\n📊 عدد الأيام: ${sortedDates.length}\n📁 اسم الملف: ${fileName}`);
-}
-
-// إنشاء ورقة ملخصة للتقرير
-function createSummarySheet(workbook, sortedDates) {
-    const summaryData = [];
-    
-    // رأس الورقة الملخصة
-    summaryData.push([`ملخص تقرير الفترة الكاملة`]);
-    summaryData.push([`المعلم: فهـد الخالدي - المادة: اللغة الإنجليزية`]);
-    summaryData.push([`المدرسة: سعيد بن العاص المتوسطة`]);
-    summaryData.push([`${document.getElementById('currentSemesterInfo').textContent}`]);
-    summaryData.push([]);
-    summaryData.push(['ملخص الإحصائيات']);
-    summaryData.push(['عدد الأيام', sortedDates.length]);
-    summaryData.push(['الفترة من', sortedDates[0]]);
-    summaryData.push(['الفترة إلى', sortedDates[sortedDates.length - 1]]);
-    summaryData.push([]);
-    
-    // جدول الأيام
-    summaryData.push(['تفاصيل الأيام']);
-    summaryData.push(['اليوم', 'التاريخ الميلادي', 'التاريخ الهجري', 'الأسبوع']);
-    
-    sortedDates.forEach(dateKey => {
-        const dayData = periodAttendanceData[dateKey];
+    // إنشاء ورقة لكل أسبوع
+    for (const weekKey in weeksData) {
+        const week = weeksData[weekKey];
+        if (week.days.length === 0) continue;
         
-        // البحث عن الأسبوع
-        let weekNumber = "غير محدد";
-        studyWeeks.forEach(week => {
-            week.days.forEach(day => {
-                if (day.gregorian === dayData.gregorianDate) {
-                    weekNumber = week.week;
-                }
-            });
+        const sheetData = [];
+        
+        // رأس التقرير (مطابق للصورة)
+        sheetData.push(["تقرير الأساسي الدراسية 2025..."]);
+        sheetData.push([""]);
+        sheetData.push(["تقرير التحضير للأسابيع الدراسية"]);
+        sheetData.push(["املعلم: فهـد الخالدي - املادة: اللغة الإنجليزية"]);
+        sheetData.push(["الفصل الدراسي الأول 1447"]);
+        sheetData.push(["املدرسة: سعيد بن العاصم املتوسطة"]);
+        sheetData.push(["عدد الأساسي: 18 أسبوع (من 1 إلى 13 ثم 15 إلى 19)"]);
+        sheetData.push(["تاريخ التصديق: ٢ ديسمبر ٢٠٢٦"]);
+        sheetData.push([""]);
+        sheetData.push([""]);
+        
+        // عنوان الأسبوع
+        sheetData.push(["### الأسوع " + week.weekNumber]);
+        sheetData.push([""]);
+        
+        // لكل يوم في الأسبوع
+        week.days.forEach(dayData => {
+            // عنوان اليوم
+            sheetData.push([`#### (${dayData.hijri}) ${dayData.gregorian}- ${dayData.dayInfo}`]);
+            sheetData.push([""]);
+            
+            // إضافة بيانات كل صف في هذا اليوم
+            for (const className in dayData.data.classes) {
+                const classStudents = dayData.data.classes[className];
+                sheetData.push([`**الصف ${className}: ${classStudents.length} طالب**`]);
+                sheetData.push([""]);
+                
+                // رأس الجدول (مطابق للصورة)
+                sheetData.push([
+                    "مكونات", 
+                    "معلومات وتنشئة", 
+                    "التعريفات", 
+                    "الواجهات", 
+                    "الحضور", 
+                    "الإسهم", 
+                    "الصف"
+                ]);
+                
+                // بيانات الطلاب
+                classStudents.forEach((student, index) => {
+                    const row = [
+                        student.evaluations[0] || "✓",
+                        student.evaluations[1] || "✓",
+                        student.evaluations[2] || "✓",
+                        student.evaluations[3] || "✓",
+                        student.evaluations[4] || "✓",
+                        student.studentName,
+                        index + 1
+                    ];
+                    sheetData.push(row);
+                });
+                
+                sheetData.push([""]);
+                sheetData.push(["---"]);
+                sheetData.push([""]);
+            }
         });
         
-        summaryData.push([
-            dayData.dayInfo,
-            dayData.gregorianDate,
-            dayData.hijriDate,
-            weekNumber
-        ]);
+        // إنشاء الورقة
+        const worksheet = XLSX.utils.aoa_to_sheet(sheetData);
+        
+        // تنسيق الأعمدة
+        const colWidths = [
+            { wch: 10 },  // مكونات
+            { wch: 15 },  // معلومات وتنشئة
+            { wch: 12 },  // التعريفات
+            { wch: 12 },  // الواجهات
+            { wch: 10 },  // الحضور
+            { wch: 35 },  // الإسهم (الأسماء)
+            { wch: 8 }    // الصف
+        ];
+        worksheet['!cols'] = colWidths;
+        
+        // اسم الورقة: أسبوع + رقم
+        const sheetName = `أسبوع ${week.weekNumber}`.substring(0, 31);
+        XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
+    }
+    
+    // إنشاء ورقة ملخصة
+    const summaryData = [];
+    summaryData.push(["ملخص تقرير الفترة الكاملة"]);
+    summaryData.push([""]);
+    summaryData.push(["املعلم: فهـد الخالدي - املادة: اللغة الإنجليزية"]);
+    summaryData.push(["الفصل الدراسي الأول 1447"]);
+    summaryData.push(["املدرسة: سعيد بن العاصم املتوسطة"]);
+    summaryData.push([""]);
+    
+    summaryData.push(["الإحصائيات:"]);
+    summaryData.push(["عدد الأسابيع", studyWeeks.length]);
+    
+    let totalDays = 0;
+    let totalStudents = 0;
+    
+    studyWeeks.forEach(week => {
+        totalDays += week.days.length;
     });
     
-    // إنشاء الورقة الملخصة
-    const summarySheet = XLSX.utils.aoa_to_sheet(summaryData);
+    for (const className in studentsData) {
+        totalStudents += studentsData[className].length;
+    }
     
-    // تنسيق الأعمدة
+    summaryData.push(["عدد الأيام", totalDays]);
+    summaryData.push(["عدد الصفوف", Object.keys(studentsData).length]);
+    summaryData.push(["إجمالي الطلاب", totalStudents]);
+    summaryData.push([""]);
+    
+    summaryData.push(["قائمة الأسابيع:"]);
+    summaryData.push(["رقم الأسبوع", "تاريخ البداية (هجري)", "تاريخ البداية (ميلادي)"]);
+    
+    studyWeeks.forEach(week => {
+        summaryData.push([week.week, week.start_hijri, week.start_gregorian]);
+    });
+    
+    const summarySheet = XLSX.utils.aoa_to_sheet(summaryData);
     summarySheet['!cols'] = [
-        { wch: 15 },  // اليوم
-        { wch: 15 },  // التاريخ الميلادي
-        { wch: 15 },  // التاريخ الهجري
-        { wch: 10 }   // الأسبوع
+        { wch: 15 },
+        { wch: 20 },
+        { wch: 20 }
     ];
     
     XLSX.utils.book_append_sheet(workbook, summarySheet, 'ملخص');
+    
+    // تصدير الملف
+    const fileName = `تقرير_الأسابيع_الدراسية.xlsx`;
+    XLSX.writeFile(workbook, fileName);
+    
+    alert(`✅ تم تصدير تقرير الفترة الكاملة بنجاح!\n\n📊 عدد الأسابيع: ${Object.keys(weeksData).length}\n📁 اسم الملف: ${fileName}`);
 }
 
 // طباعة الصفحة
@@ -2360,11 +2401,11 @@ function filterByStatus(status) {
                 showRow = true;
             } else if (status === 'present') {
                 const evaluationCells = row.querySelectorAll('.evaluation-cell');
-                const allPresent = Array.from(evaluationCells).every(cell => cell.innerHTML === "✔");
+                const allPresent = Array.from(evaluationCells).every(cell => cell.innerHTML === "✓");
                 showRow = allPresent;
             } else if (status === 'absent') {
                 const evaluationCells = row.querySelectorAll('.evaluation-cell');
-                const anyAbsent = Array.from(evaluationCells).some(cell => cell.innerHTML === "✖");
+                const anyAbsent = Array.from(evaluationCells).some(cell => cell.innerHTML === "✗");
                 showRow = anyAbsent;
             } else if (status === 'star') {
                 const starCell = row.querySelector('.star-cell');
