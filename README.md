@@ -748,8 +748,6 @@ a, button {
     }
 }
 </style>
-<!-- مكتبة ummAlQura لحساب التاريخ الهجري -->
-<script src="https://cdn.jsdelivr.net/npm/hijri-date/lib/simple.umd.min.js"></script>
 <!-- مكتبة SheetJS لتصدير Excel -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
@@ -1463,31 +1461,24 @@ function getGregorianDateString(date) {
 // الحصول على التاريخ الميلادي قصير للتقرير
 function getShortGregorianDate(date) {
     const day = date.getDate();
-    const month = gregorianMonths[date.getMonth()];
+    const month = date.getMonth() + 1;
     const year = date.getFullYear();
     
     const arabicDay = convertToArabicNumbers(day);
+    const arabicMonth = convertToArabicNumbers(month);
     const arabicYear = convertToArabicNumbers(year);
     
-    return `${arabicDay}/${convertToArabicNumbers(date.getMonth() + 1)}/${arabicYear}`;
+    return `${arabicDay}/${arabicMonth}/${arabicYear}`;
 }
 
 // حساب التاريخ الهجري من التاريخ الميلادي
 function calculateHijriFromGregorian() {
     try {
-        if (typeof HijriDate !== 'undefined') {
-            const hijri = new HijriDate(selectedDate);
-            hijriDate.day = hijri.date;
-            hijriDate.month = hijri.month;
-            hijriDate.year = hijri.year;
-            hijriDate.monthName = hijriMonths[hijri.month - 1];
-        } else {
-            const fixedHijri = getApproximateHijriDate(selectedDate);
-            hijriDate.day = fixedHijri.day;
-            hijriDate.month = fixedHijri.month;
-            hijriDate.year = fixedHijri.year;
-            hijriDate.monthName = hijriMonths[fixedHijri.month - 1];
-        }
+        const fixedHijri = getApproximateHijriDate(selectedDate);
+        hijriDate.day = fixedHijri.day;
+        hijriDate.month = fixedHijri.month;
+        hijriDate.year = fixedHijri.year;
+        hijriDate.monthName = hijriMonths[fixedHijri.month - 1];
     } catch (error) {
         console.error("خطأ في حساب التاريخ الهجري:", error);
         hijriDate = { day: 1, month: 1, year: 1446, monthName: "محرم" };
@@ -2070,48 +2061,106 @@ function loadBackup() {
     }
 }
 
-// تصدير إلى Excel للتاريخ الحالي
+// تصدير إلى Excel للتاريخ الحالي (مطابق لتنسيق الصورة)
 function exportToExcel() {
+    // إنشاء مصنف Excel
+    const workbook = XLSX.utils.book_new();
+    
+    // تنسيق التاريخ
     const gregorianDateForExcel = getShortGregorianDate(selectedDate);
     const hijriDateForExcel = `${convertToArabicNumbers(hijriDate.day)} ${hijriDate.monthName} ${convertToArabicNumbers(hijriDate.year)}هـ`;
+    const currentWeekDay = weekDays[selectedDate.getDay()];
     
-    let tablesHTML = `<h2>سجل متابعة الطلاب - المعلم: فهد الخالدي</h2>`;
-    tablesHTML += `<h3>المادة: اللغة الإنجليزية - ${document.getElementById('currentSemesterInfo').textContent}</h3>`;
-    tablesHTML += `<h3>المدرسة: سعيد بن العاص المتوسطة</h3>`;
-    tablesHTML += `<h3>التاريخ الميلادي: ${gregorianDateForExcel}</h3>`;
-    tablesHTML += `<h3>التاريخ الهجري: ${hijriDateForExcel}</h3>`;
-    
+    // إضافة كل صف كورقة منفصلة
     for (const className in studentsData) {
-        tablesHTML += `<h3>الصف ${className}</h3>`;
-        tablesHTML += document.getElementById(`class-${className}`).querySelector('table').outerHTML;
+        const sheetData = [];
+        
+        // رأس التقرير (مطابق للصورة)
+        sheetData.push(["تقرير الأساسي الدراسية 2025..."]);
+        sheetData.push([""]);
+        sheetData.push(["تقرير التحضير للأسابيع الدراسية"]);
+        sheetData.push(["المعلم: فهـد الخالدي - المادة: اللغة الإنجليزية"]);
+        sheetData.push([`الفصل الدراسي: ${document.getElementById('currentSemesterInfo').textContent}`]);
+        sheetData.push([`المدرسة: سعيد بن العاص المتوسطة`]);
+        sheetData.push([`عدد الأساسي: 18 أسبوع (من 1 إلى 13 ثم 15 إلى 19)`]);
+        sheetData.push([`تاريخ التصديق: ${hijriDateForExcel} (${gregorianDateForExcel})`]);
+        sheetData.push([""]);
+        sheetData.push([""]);
+        
+        // عنوان الأسبوع واليوم
+        sheetData.push([`الأسبوع 1`]);
+        sheetData.push([`(${hijriDateForExcel}) ${gregorianDateForExcel} - ${currentWeekDay}`]);
+        sheetData.push([`الصف ${className}: ${studentsData[className].length} طالب`]);
+        sheetData.push([""]);
+        
+        // رأس الجدول (مطابق للصورة)
+        sheetData.push([
+            "م", 
+            "معلومات وتنشئة", 
+            "التعريفات", 
+            "الواجهات", 
+            "الحضور", 
+            "الإسهم", 
+            "الصف", 
+            "الاسم"
+        ]);
+        
+        // بيانات الطلاب
+        studentsData[className].forEach((student, index) => {
+            // الحصول على حالة التقييم من الجدول المعروض
+            let evaluations = [];
+            const table = document.getElementById(`tbody-${className}`);
+            if (table) {
+                const row = table.rows[index];
+                if (row) {
+                    const cells = row.cells;
+                    evaluations = [
+                        cells[2]?.querySelector('.evaluation-cell')?.textContent || "✔",
+                        cells[3]?.querySelector('.evaluation-cell')?.textContent || "✔",
+                        cells[4]?.querySelector('.evaluation-cell')?.textContent || "✔",
+                        cells[5]?.querySelector('.evaluation-cell')?.textContent || "✔",
+                        cells[6]?.querySelector('.evaluation-cell')?.textContent || "✔"
+                    ];
+                }
+            }
+            
+            sheetData.push([
+                index + 1,
+                evaluations[0] || "✔",
+                evaluations[1] || "✔",
+                evaluations[2] || "✔",
+                evaluations[3] || "✔",
+                evaluations[4] || "✔",
+                className,
+                student
+            ]);
+        });
+        
+        // إنشاء الورقة
+        const worksheet = XLSX.utils.aoa_to_sheet(sheetData);
+        
+        // تنسيق الأعمدة
+        const colWidths = [
+            { wch: 5 },   // م
+            { wch: 10 },  // معلومات وتنشئة
+            { wch: 10 },  // التعريفات
+            { wch: 10 },  // الواجهات
+            { wch: 10 },  // الحضور
+            { wch: 10 },  // الإسهم
+            { wch: 8 },   // الصف
+            { wch: 40 }   // الاسم
+        ];
+        worksheet['!cols'] = colWidths;
+        
+        // إضافة الورقة إلى المصنف
+        XLSX.utils.book_append_sheet(workbook, worksheet, `الصف ${className}`);
     }
     
-    let uri = 'data:application/vnd.ms-excel;base64,';
-    let template = `<html xmlns:o="urn:schemas-microsoft-com:office:office" 
-                   xmlns:x="urn:schemas-microsoft-com:office:excel" 
-                   xmlns="http://www.w3.org/TR/REC-html40">
-                   <head>
-                   <meta charset="UTF-8">
-                   <!--[if gte mso 9]>
-                   <xml>
-                   <x:ExcelWorkbook>
-                   <x:ExcelWorksheets>
-                   <x:ExcelWorksheet>
-                   <x:Name>تقرير الطلاب</x:Name>
-                   <x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions>
-                   </x:ExcelWorksheet>
-                   </x:ExcelWorksheets>
-                   </x:ExcelWorkbook>
-                   </xml>
-                   <![endif]-->
-                   </head>
-                   <body dir="rtl">${tablesHTML}</body></html>`;
+    // تصدير الملف
+    const fileName = `تقرير_حضور_${gregorianDateForExcel.replace(/\//g, '-')}.xlsx`;
+    XLSX.writeFile(workbook, fileName);
     
-    let link = document.createElement("a");
-    link.href = uri + btoa(unescape(encodeURIComponent(template)));
-    const dateStr = selectedDate.toISOString().split('T')[0];
-    link.download = `تقرير_حضور_${dateStr}.xls`;
-    link.click();
+    alert(`تم تصدير التقرير بنجاح!\n\nاسم الملف: ${fileName}`);
 }
 
 // تصدير فترة كاملة إلى Excel - إصدار محسّن
@@ -2139,50 +2188,78 @@ function exportPeriodToExcel() {
     sortedDates.forEach((dateKey, index) => {
         const dayData = periodAttendanceData[dateKey];
         
-        // إنشاء بيانات للورقة
-        const sheetData = [];
+        // تحويل التاريخ من YYYY-MM-DD إلى DD/MM/YYYY
+        const gregorianParts = dayData.gregorianDate.split('/');
+        const formattedGregorian = `${gregorianParts[0]}/${gregorianParts[1]}/${gregorianParts[2]}`;
         
-        // رأس التقرير
-        sheetData.push([`سجل متابعة الطلاب - الفترة الكاملة`]);
-        sheetData.push([`المعلم: فهد الخالدي - المادة: اللغة الإنجليزية`]);
-        sheetData.push([`المدرسة: سعيد بن العاص المتوسطة`]);
-        sheetData.push([`${document.getElementById('currentSemesterInfo').textContent}`]);
-        sheetData.push([]);
-        sheetData.push([`اليوم: ${dayData.dayInfo}`]);
-        sheetData.push([`التاريخ الميلادي: ${dayData.gregorianDate}`]);
-        sheetData.push([`التاريخ الهجري: ${dayData.hijriDate}`]);
-        sheetData.push([]);
-        
-        // إضافة بيانات كل صف
+        // إضافة كل صف في اليوم كمجموعة
         for (const className in dayData.classes) {
-            sheetData.push([`الصف ${className}`]);
-            sheetData.push(['م', 'الاسم', 'الحضور', 'الواجبات', 'المشروعات', 'تطبيقات وأنشطة', 'مشاركة', 'نجمة']);
+            const sheetData = [];
             
+            // رأس التقرير (مطابق للصورة)
+            sheetData.push(["تقرير الأساسي الدراسية 2025..."]);
+            sheetData.push([""]);
+            sheetData.push(["تقرير التحضير للأسابيع الدراسية"]);
+            sheetData.push(["المعلم: فهـد الخالدي - المادة: اللغة الإنجليزية"]);
+            sheetData.push([`الفصل الدراسي: ${document.getElementById('currentSemesterInfo').textContent}`]);
+            sheetData.push([`المدرسة: سعيد بن العاص المتوسطة`]);
+            sheetData.push([`عدد الأساسي: 18 أسبوع (من 1 إلى 13 ثم 15 إلى 19)`]);
+            sheetData.push([`تاريخ التصديق: ${dayData.hijriDate} (${formattedGregorian})`]);
+            sheetData.push([""]);
+            sheetData.push([""]);
+            
+            // عنوان الأسبوع واليوم
+            sheetData.push([`الأسبوع 1`]);
+            sheetData.push([`(${dayData.hijriDate}) ${formattedGregorian} - ${dayData.dayInfo}`]);
+            sheetData.push([`الصف ${className}: ${dayData.classes[className].length} طالب`]);
+            sheetData.push([""]);
+            
+            // رأس الجدول
+            sheetData.push([
+                "م", 
+                "معلومات وتنشئة", 
+                "التعريفات", 
+                "الواجهات", 
+                "الحضور", 
+                "الإسهم", 
+                "الصف", 
+                "الاسم"
+            ]);
+            
+            // بيانات الطلاب
             dayData.classes[className].forEach((student, idx) => {
                 sheetData.push([
                     idx + 1,
-                    student.studentName,
-                    student.evaluations[0] || '',
-                    student.evaluations[1] || '',
-                    student.evaluations[2] || '',
-                    student.evaluations[3] || '',
-                    student.evaluations[4] || '',
-                    student.hasStar ? '⭐' : ''
+                    student.evaluations[0] || "✔",
+                    student.evaluations[1] || "✔",
+                    student.evaluations[2] || "✔",
+                    student.evaluations[3] || "✔",
+                    student.evaluations[4] || "✔",
+                    className,
+                    student.studentName
                 ]);
             });
             
-            sheetData.push([]);
-            sheetData.push([]);
+            // إنشاء الورقة
+            const worksheet = XLSX.utils.aoa_to_sheet(sheetData);
+            
+            // تنسيق الأعمدة
+            const colWidths = [
+                { wch: 5 },   // م
+                { wch: 10 },  // معلومات وتنشئة
+                { wch: 10 },  // التعريفات
+                { wch: 10 },  // الواجهات
+                { wch: 10 },  // الحضور
+                { wch: 10 },  // الإسهم
+                { wch: 8 },   // الصف
+                { wch: 40 }   // الاسم
+            ];
+            worksheet['!cols'] = colWidths;
+            
+            // اسم الورقة: اليوم_الصف
+            const sheetName = `${dayData.dayInfo}_${className}`.substring(0, 31);
+            XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
         }
-        
-        // إنشاء ورقة جديدة
-        const worksheet = XLSX.utils.aoa_to_sheet(sheetData);
-        
-        // تحديد اسم للورقة (مختصر)
-        const sheetName = `يوم${index + 1}`;
-        
-        // إضافة الورقة للمصنف
-        XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
     });
     
     // إنشاء ورقة ملخصة
@@ -2201,7 +2278,7 @@ function createSummarySheet(workbook, sortedDates) {
     
     // رأس الورقة الملخصة
     summaryData.push([`ملخص تقرير الفترة الكاملة`]);
-    summaryData.push([`المعلم: فهد الخالدي - المادة: اللغة الإنجليزية`]);
+    summaryData.push([`المعلم: فهـد الخالدي - المادة: اللغة الإنجليزية`]);
     summaryData.push([`المدرسة: سعيد بن العاص المتوسطة`]);
     summaryData.push([`${document.getElementById('currentSemesterInfo').textContent}`]);
     summaryData.push([]);
@@ -2213,19 +2290,40 @@ function createSummarySheet(workbook, sortedDates) {
     
     // جدول الأيام
     summaryData.push(['تفاصيل الأيام']);
-    summaryData.push(['اليوم', 'التاريخ الميلادي', 'التاريخ الهجري']);
+    summaryData.push(['اليوم', 'التاريخ الميلادي', 'التاريخ الهجري', 'الأسبوع']);
     
     sortedDates.forEach(dateKey => {
         const dayData = periodAttendanceData[dateKey];
+        
+        // البحث عن الأسبوع
+        let weekNumber = "غير محدد";
+        studyWeeks.forEach(week => {
+            week.days.forEach(day => {
+                if (day.gregorian === dayData.gregorianDate) {
+                    weekNumber = week.week;
+                }
+            });
+        });
+        
         summaryData.push([
             dayData.dayInfo,
             dayData.gregorianDate,
-            dayData.hijriDate
+            dayData.hijriDate,
+            weekNumber
         ]);
     });
     
     // إنشاء الورقة الملخصة
     const summarySheet = XLSX.utils.aoa_to_sheet(summaryData);
+    
+    // تنسيق الأعمدة
+    summarySheet['!cols'] = [
+        { wch: 15 },  // اليوم
+        { wch: 15 },  // التاريخ الميلادي
+        { wch: 15 },  // التاريخ الهجري
+        { wch: 10 }   // الأسبوع
+    ];
+    
     XLSX.utils.book_append_sheet(workbook, summarySheet, 'ملخص');
 }
 
