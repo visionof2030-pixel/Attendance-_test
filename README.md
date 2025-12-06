@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>سجل متابعة الطلاب - فهد الخالدي</title>
 <style>
 /* أنماط عامة */
@@ -17,6 +17,7 @@
     --danger-color: #e74c3c;
     --border-color: #ddd;
     --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --shadow-light: 0 2px 4px rgba(0, 0, 0, 0.05);
     --transition: all 0.3s ease;
 }
 
@@ -24,104 +25,127 @@
     box-sizing: border-box;
     margin: 0;
     padding: 0;
+    -webkit-tap-highlight-color: transparent;
 }
 
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
     background-color: #f5f7fa;
     color: #333;
     line-height: 1.6;
     padding: 0;
     margin: 0;
+    font-size: 15px;
 }
 
-/* الهيدر */
+/* تحسينات للجوال */
+html {
+    font-size: 14px;
+}
+
+@media (min-width: 768px) {
+    html {
+        font-size: 16px;
+    }
+}
+
+/* الهيدر - تحسين للجوال */
 header {
     background: linear-gradient(135deg, var(--primary-color), #1a252f);
     color: white;
-    padding: 1.5rem 2rem;
+    padding: 1rem;
     box-shadow: var(--shadow);
     position: relative;
     overflow: hidden;
 }
 
-header::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 100%;
-    height: 100%;
-    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none" opacity="0.05"><path d="M0,0 L100,0 L100,100 Z" fill="white"/></svg>');
-    background-size: cover;
-}
-
 .header-main {
-    font-size: 1.8rem;
+    font-size: 1.4rem;
     font-weight: 700;
     margin-bottom: 0.5rem;
     position: relative;
     z-index: 1;
+    line-height: 1.3;
 }
 
 .header-sub {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
+    flex-direction: column;
+    gap: 10px;
     position: relative;
     z-index: 1;
 }
 
-.header-sub div {
-    font-size: 1.1rem;
+.header-sub > div:first-child {
+    font-size: 1rem;
     opacity: 0.9;
+    padding: 8px 0;
 }
 
 .current-date {
     display: flex;
-    align-items: center;
-    gap: 15px;
+    flex-direction: column;
+    gap: 10px;
     background: rgba(255, 255, 255, 0.1);
-    padding: 10px 20px;
+    padding: 12px;
     border-radius: 8px;
     backdrop-filter: blur(5px);
+    width: 100%;
 }
 
 .current-date > div {
     display: flex;
     align-items: center;
-    gap: 5px;
+    gap: 8px;
+    flex-wrap: wrap;
 }
 
 .date-info {
     background-color: rgba(26, 188, 156, 0.2);
-    padding: 5px 12px;
+    padding: 6px 10px;
     border-radius: 20px;
     font-weight: 600;
+    font-size: 0.9rem;
+    white-space: nowrap;
 }
 
-/* الحاوية الرئيسية */
+/* الحاوية الرئيسية - تحسين للجوال */
 .container {
-    max-width: 1400px;
+    width: 100%;
     margin: 0 auto;
-    padding: 20px;
+    padding: 10px;
 }
 
-/* أزرار التحكم */
+@media (min-width: 768px) {
+    .container {
+        max-width: 95%;
+        padding: 15px;
+    }
+}
+
+@media (min-width: 1200px) {
+    .container {
+        max-width: 1400px;
+        padding: 20px;
+    }
+}
+
+/* أزرار التحكم - تحسين للجوال */
 .controls {
     display: flex;
     flex-wrap: wrap;
-    gap: 12px;
-    margin-bottom: 25px;
-    padding: 20px;
+    gap: 8px;
+    margin-bottom: 15px;
+    padding: 15px;
     background-color: white;
     border-radius: 12px;
-    box-shadow: var(--shadow);
+    box-shadow: var(--shadow-light);
 }
 
 .controls button {
-    padding: 12px 20px;
+    flex: 1 1 calc(50% - 8px);
+    min-width: 140px;
+    padding: 12px 10px;
     border: none;
     border-radius: 8px;
     background-color: var(--secondary-color);
@@ -131,41 +155,64 @@ header::before {
     transition: var(--transition);
     display: flex;
     align-items: center;
-    gap: 8px;
-    font-size: 0.95rem;
+    justify-content: center;
+    gap: 6px;
+    font-size: 0.9rem;
+    touch-action: manipulation;
+}
+
+.controls button:active {
+    transform: scale(0.98);
 }
 
 .controls button:hover {
     background-color: #2980b9;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
 }
 
-/* ألسنة الصفوف */
+/* ألسنة الصفوف - تحسين للجوال */
 .class-tabs {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px;
-    margin-bottom: 25px;
+    gap: 8px;
+    margin-bottom: 15px;
     background-color: white;
-    padding: 20px;
+    padding: 15px;
     border-radius: 12px;
-    box-shadow: var(--shadow);
+    box-shadow: var(--shadow-light);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.class-tabs::-webkit-scrollbar {
+    height: 4px;
+}
+
+.class-tabs::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 2px;
+}
+
+.class-tabs::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 2px;
 }
 
 .class-tab {
-    padding: 12px 24px;
+    flex: 0 0 auto;
+    padding: 10px 16px;
     background-color: #ecf0f1;
     border-radius: 8px;
     cursor: pointer;
     font-weight: 600;
     transition: var(--transition);
     border: 2px solid transparent;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    user-select: none;
 }
 
-.class-tab:hover {
-    background-color: #d5dbdb;
-    transform: translateY(-2px);
+.class-tab:active {
+    transform: scale(0.95);
 }
 
 .class-tab.active {
@@ -174,31 +221,34 @@ header::before {
     border-color: var(--accent-color);
 }
 
-/* فلتر الحالة */
+/* فلتر الحالة - تحسين للجوال */
 .status-filter {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px;
-    margin-bottom: 25px;
+    gap: 8px;
+    margin-bottom: 15px;
     background-color: white;
-    padding: 20px;
+    padding: 15px;
     border-radius: 12px;
-    box-shadow: var(--shadow);
+    box-shadow: var(--shadow-light);
 }
 
 .status-filter button {
-    padding: 10px 20px;
+    flex: 1 1 calc(50% - 8px);
+    min-width: 120px;
+    padding: 10px 15px;
     border: 2px solid var(--border-color);
     background-color: white;
     border-radius: 8px;
     cursor: pointer;
     font-weight: 600;
     transition: var(--transition);
+    font-size: 0.9rem;
+    touch-action: manipulation;
 }
 
-.status-filter button:hover {
-    background-color: #f8f9fa;
-    border-color: var(--secondary-color);
+.status-filter button:active {
+    transform: scale(0.95);
 }
 
 .status-filter button.active {
@@ -207,20 +257,24 @@ header::before {
     border-color: var(--secondary-color);
 }
 
-/* تصميم جداول الطلاب المحسّن */
+/* تصميم جداول الطلاب المحسّن للجوال */
 .tables-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(600px, 1fr));
-    gap: 25px;
-    margin-bottom: 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 20px;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 .class-section {
     background-color: white;
     border-radius: 12px;
     overflow: hidden;
-    box-shadow: var(--shadow);
+    box-shadow: var(--shadow-light);
     transition: var(--transition);
+    min-width: 100%;
 }
 
 .class-section.show {
@@ -240,35 +294,49 @@ header::before {
 .class-header {
     background: linear-gradient(to right, var(--primary-color), #34495e);
     color: white;
-    padding: 18px 25px;
-    font-size: 1.3rem;
+    padding: 15px;
+    font-size: 1.1rem;
     font-weight: 700;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    position: sticky;
+    left: 0;
 }
 
 .class-header::after {
     content: "📚";
-    font-size: 1.5rem;
+    font-size: 1.2rem;
+}
+
+.student-table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
 }
 
 .student-table {
     width: 100%;
     border-collapse: collapse;
+    min-width: 700px;
 }
 
 .student-table thead {
     background-color: #f8f9fa;
+    position: sticky;
+    top: 0;
+    z-index: 10;
 }
 
 .student-table th {
-    padding: 16px 12px;
+    padding: 14px 8px;
     text-align: center;
     font-weight: 700;
     color: var(--primary-color);
     border-bottom: 2px solid var(--border-color);
     position: relative;
+    font-size: 0.9rem;
+    white-space: nowrap;
 }
 
 .student-table th::after {
@@ -288,49 +356,60 @@ header::before {
 
 .student-table tbody tr:hover {
     background-color: #f8f9fa;
-    transform: translateY(-1px);
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.05);
 }
 
 .student-table td {
-    padding: 14px 12px;
+    padding: 12px 8px;
     text-align: center;
     vertical-align: middle;
     position: relative;
+    font-size: 0.9rem;
 }
 
 .student-table td:first-child {
     font-weight: 700;
     color: var(--primary-color);
     background-color: #f8f9fa;
+    position: sticky;
+    right: 0;
+    z-index: 5;
+    border-left: 1px solid #eee;
 }
 
 .student-table td:nth-child(2) {
     text-align: right;
-    padding-right: 20px;
+    padding-right: 15px;
     font-weight: 500;
+    position: sticky;
+    right: 40px;
+    background-color: white;
+    z-index: 4;
+    min-width: 180px;
+    white-space: normal;
+    word-break: break-word;
 }
 
-/* إصلاح خلايا التقييم - إصلاح نهائي */
+/* إصلاح خلايا التقييم - تحسين للجوال */
 .evaluation-cell {
     font-weight: 700;
     cursor: pointer;
     border-radius: 6px;
     transition: var(--transition);
-    min-width: 45px;
+    min-width: 40px;
     display: flex;
     align-items: center;
     justify-content: center;
     height: 100%;
-    min-height: 40px;
+    min-height: 36px;
     user-select: none;
     position: relative;
     margin: 0 auto;
+    font-size: 1rem;
+    touch-action: manipulation;
 }
 
-.evaluation-cell:hover {
-    transform: scale(1.1);
-    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+.evaluation-cell:active {
+    transform: scale(0.9);
 }
 
 .evaluation-cell.present {
@@ -346,18 +425,19 @@ header::before {
 /* خلايا النجوم */
 .star-cell {
     cursor: pointer;
-    font-size: 1.5rem;
+    font-size: 1.4rem;
     transition: var(--transition);
     user-select: none;
     display: flex;
     align-items: center;
     justify-content: center;
     height: 100%;
-    min-height: 40px;
+    min-height: 36px;
+    touch-action: manipulation;
 }
 
-.star-cell:hover {
-    transform: scale(1.2);
+.star-cell:active {
+    transform: scale(0.9);
 }
 
 .starred-student {
@@ -369,28 +449,28 @@ header::before {
 .student-count {
     background: linear-gradient(to right, var(--accent-color), #16a085);
     color: white;
-    padding: 18px 25px;
+    padding: 15px;
     border-radius: 12px;
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     font-weight: 700;
     text-align: center;
-    margin-bottom: 25px;
+    margin-bottom: 15px;
     box-shadow: var(--shadow);
 }
 
-/* لوحة الإدارة */
+/* لوحة الإدارة - تحسين للجوال */
 .admin-panel {
     background-color: white;
     border-radius: 12px;
-    padding: 25px;
-    margin-top: 30px;
-    box-shadow: var(--shadow);
+    padding: 15px;
+    margin-top: 20px;
+    box-shadow: var(--shadow-light);
     display: none;
 }
 
 .admin-section {
-    margin-bottom: 30px;
-    padding-bottom: 25px;
+    margin-bottom: 20px;
+    padding-bottom: 20px;
     border-bottom: 1px solid var(--border-color);
 }
 
@@ -401,44 +481,66 @@ header::before {
 
 .admin-section h4 {
     color: var(--primary-color);
-    margin-bottom: 20px;
+    margin-bottom: 15px;
     padding-bottom: 10px;
     border-bottom: 2px solid #eee;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
+    font-size: 1.1rem;
 }
 
 .admin-section h4::before {
     content: "";
     display: inline-block;
-    width: 8px;
-    height: 24px;
+    width: 6px;
+    height: 20px;
     background-color: var(--accent-color);
     border-radius: 4px;
 }
 
 .admin-row {
     display: flex;
-    align-items: center;
-    margin-bottom: 15px;
-    flex-wrap: wrap;
+    flex-direction: column;
+    margin-bottom: 12px;
+    width: 100%;
+}
+
+@media (min-width: 768px) {
+    .admin-row {
+        flex-direction: row;
+        align-items: center;
+    }
 }
 
 .admin-label {
-    width: 180px;
+    width: 100%;
     font-weight: 600;
     color: var(--primary-color);
+    margin-bottom: 5px;
+}
+
+@media (min-width: 768px) {
+    .admin-label {
+        width: 180px;
+        margin-bottom: 0;
+    }
 }
 
 .admin-input {
     flex: 1;
-    min-width: 200px;
+    min-width: 100%;
+}
+
+@media (min-width: 768px) {
+    .admin-input {
+        min-width: 200px;
+    }
 }
 
 .admin-input input, .admin-input select {
     width: 100%;
-    padding: 12px 15px;
+    padding: 12px 12px;
     border: 1px solid var(--border-color);
     border-radius: 8px;
     font-size: 1rem;
@@ -453,100 +555,128 @@ header::before {
 
 .date-controls {
     display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 20px;
-    margin: 20px 0;
+    flex-direction: column;
+    gap: 15px;
+    margin: 15px 0;
+}
+
+@media (min-width: 768px) {
+    .date-controls {
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+        gap: 20px;
+    }
 }
 
 .date-display {
     background-color: #f8f9fa;
-    padding: 15px 25px;
+    padding: 12px 20px;
     border-radius: 10px;
     font-weight: 700;
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     color: var(--primary-color);
-    min-width: 200px;
+    min-width: 100%;
     text-align: center;
 }
 
+@media (min-width: 768px) {
+    .date-display {
+        min-width: 200px;
+    }
+}
+
 .date-input {
-    padding: 12px 15px;
+    padding: 12px 12px;
     border: 1px solid var(--border-color);
     border-radius: 8px;
     font-size: 1rem;
+    width: 100%;
 }
 
 .hijri-date-selector {
     background-color: #f8f9fa;
-    padding: 20px;
+    padding: 15px;
     border-radius: 10px;
-    margin-top: 20px;
+    margin-top: 15px;
 }
 
 .semester-info, .period-info {
     display: inline-block;
     background-color: #e8f4fc;
     color: var(--secondary-color);
-    padding: 8px 15px;
+    padding: 6px 12px;
     border-radius: 20px;
     font-weight: 600;
-    margin-right: 15px;
+    margin-right: 10px;
+    font-size: 0.9rem;
+    margin-top: 10px;
 }
 
 .random-period-section {
     background-color: #f8f9fa;
-    padding: 20px;
+    padding: 15px;
     border-radius: 10px;
     margin-top: 15px;
 }
 
-/* تصميم متجاوب */
-@media (max-width: 1200px) {
-    .tables-container {
-        grid-template-columns: 1fr;
+/* أزرار الإدارة - تحسين للجوال */
+.admin-section button, .random-period-section button, .hijri-date-selector button {
+    padding: 12px 15px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    font-size: 0.9rem;
+    touch-action: manipulation;
+    width: 100%;
+    margin-bottom: 8px;
+}
+
+@media (min-width: 768px) {
+    .admin-section button, .random-period-section button, .hijri-date-selector button {
+        width: auto;
+        margin-bottom: 0;
     }
 }
 
-@media (max-width: 768px) {
-    .header-sub {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 15px;
-    }
-    
-    .controls, .class-tabs, .status-filter {
-        justify-content: center;
-    }
-    
-    .controls button, .class-tab, .status-filter button {
-        flex-grow: 1;
-        justify-content: center;
-    }
-    
-    .student-table {
-        display: block;
-        overflow-x: auto;
-    }
-    
-    .admin-row {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-    
-    .admin-label {
-        width: 100%;
-        margin-bottom: 8px;
-    }
-    
-    .date-controls {
-        flex-direction: column;
-        gap: 15px;
-    }
+.admin-section button:active, .random-period-section button:active, .hijri-date-selector button:active {
+    transform: scale(0.95);
 }
 
+/* تحسينات إضافية للجوال */
+.mobile-optimized {
+    -webkit-text-size-adjust: 100%;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* تحسينات لشريط التمرير على الجوال */
+.tables-container::-webkit-scrollbar,
+.student-table-container::-webkit-scrollbar {
+    height: 6px;
+}
+
+.tables-container::-webkit-scrollbar-track,
+.student-table-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.tables-container::-webkit-scrollbar-thumb,
+.student-table-container::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+.tables-container::-webkit-scrollbar-thumb:hover,
+.student-table-container::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* تحسينات للطباعة */
 @media print {
-    .controls, .class-tabs, .status-filter, .admin-panel {
+    .controls, .class-tabs, .status-filter, .admin-panel, .student-count {
         display: none !important;
     }
     
@@ -554,21 +684,90 @@ header::before {
         display: block !important;
         break-inside: avoid;
         box-shadow: none;
+        margin-bottom: 20px;
+    }
+    
+    .student-table {
+        min-width: 100%;
+    }
+    
+    .student-table td:first-child,
+    .student-table td:nth-child(2) {
+        position: static;
+    }
+}
+
+/* رسائل التنبيه للجوال */
+.mobile-alert {
+    display: none;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    left: 20px;
+    background-color: var(--accent-color);
+    color: white;
+    padding: 12px 15px;
+    border-radius: 10px;
+    font-weight: 600;
+    text-align: center;
+    z-index: 1000;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+    from { transform: translateY(100px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+@media (max-width: 767px) {
+    .mobile-alert {
+        display: block;
+    }
+}
+
+/* تحسينات للنقر على الروابط في الجوال */
+a, button {
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+}
+
+/* تحسينات للوضع الأفقي على الجوال */
+@media (max-height: 500px) and (orientation: landscape) {
+    .header-main {
+        font-size: 1.2rem;
+    }
+    
+    .controls button, .class-tab, .status-filter button {
+        padding: 8px 10px;
+        font-size: 0.8rem;
+    }
+    
+    .student-table th, .student-table td {
+        padding: 8px 6px;
+        font-size: 0.8rem;
     }
 }
 </style>
 <!-- مكتبة ummAlQura لحساب التاريخ الهجري -->
 <script src="https://cdn.jsdelivr.net/npm/hijri-date/lib/simple.umd.min.js"></script>
+<!-- مكتبة SheetJS لتصدير Excel -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
-<body>
+<body class="mobile-optimized">
+
+<div class="mobile-alert" id="mobileAlert">
+    💡 اسحب الجدول يميناً/يساراً لعرض جميع الأعمدة
+</div>
 
 <header>
     <div class="header-main">سجل متابعة الطلاب للمعلم / فهد الخالدي - المادة / اللغة الإنجليزية</div>
     <div class="header-sub">
         <div>المدرسة: سعيد بن العاص المتوسطة</div>
         <div class="current-date">
-            <div>تاريخ اليوم:</div>
-            <div id="gregorianDateText">تحميل...</div>
+            <div>
+                <div>تاريخ اليوم:</div>
+                <div id="gregorianDateText">تحميل...</div>
+            </div>
             <div class="date-info" id="hijriDateText">تحميل التاريخ الهجري...</div>
         </div>
     </div>
@@ -600,9 +799,9 @@ header::before {
     
     <div class="student-count" id="studentCount">إجمالي الطلاب: 0</div>
     
-    <div style="text-align: center; margin: 25px 0; padding: 20px; background-color: white; border-radius: 12px; box-shadow: var(--shadow);">
-        <input type="password" id="adminPass" placeholder="ادخل كلمة المرور للإدارة" style="width: 250px; padding: 12px 15px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 1rem;">
-        <button onclick="checkAdmin()" style="padding: 12px 25px; background-color: var(--accent-color); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; margin-right: 10px; transition: var(--transition);">🔓 فتح الإدارة</button>
+    <div style="text-align: center; margin: 15px 0; padding: 15px; background-color: white; border-radius: 12px; box-shadow: var(--shadow-light);">
+        <input type="password" id="adminPass" placeholder="ادخل كلمة المرور للإدارة" style="width: 100%; max-width: 300px; padding: 12px 15px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 1rem; margin-bottom: 10px;">
+        <button onclick="checkAdmin()" style="padding: 12px 20px; background-color: var(--accent-color); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: var(--transition); width: 100%; max-width: 300px;">🔓 فتح الإدارة</button>
     </div>
 
     <div class="admin-panel" id="adminPanel">
@@ -627,39 +826,39 @@ header::before {
                 </div>
             </div>
             <div style="text-align: center; margin-top: 10px;">
-                <button onclick="saveSemesterSettings()" style="padding: 12px 25px; background-color: var(--secondary-color); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; margin-right: 10px; transition: var(--transition);">💾 حفظ إعدادات الفصل</button>
+                <button onclick="saveSemesterSettings()" style="background-color: var(--secondary-color); color: white;">💾 حفظ إعدادات الفصل</button>
                 <span class="semester-info" id="currentSemesterInfo">الفصل الثاني ١٤٤٦هـ</span>
             </div>
         </div>
         
         <div class="admin-section">
             <h4>🕐 التحكم في التاريخ (للتعديل فقط)</h4>
-            <div style="text-align:center; background:#f8f9fa; padding:15px; border-radius:8px; margin-bottom:15px; border-right: 4px solid var(--warning-color);">
+            <div style="text-align:center; background:#f8f9fa; padding:12px; border-radius:8px; margin-bottom:15px; border-right: 4px solid var(--warning-color); font-size: 0.9rem;">
                 <strong>ملاحظة:</strong> يتم عرض تاريخ اليوم الحقيقي تلقائياً. هذه الأدوات تستخدم فقط لتعديل التاريخ عند الحاجة.
             </div>
             <div class="date-controls">
-                <button onclick="changeMonth(-1)" style="padding: 12px 20px; background-color: var(--primary-color); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">◀ الشهر السابق</button>
+                <button onclick="changeMonth(-1)" style="background-color: var(--primary-color); color: white;">◀ الشهر السابق</button>
                 <div class="date-display" id="adminDateDisplay">...</div>
-                <button onclick="changeMonth(1)" style="padding: 12px 20px; background-color: var(--primary-color); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">الشهر القادم ▶</button>
+                <button onclick="changeMonth(1)" style="background-color: var(--primary-color); color: white;">الشهر القادم ▶</button>
             </div>
-            <div style="text-align: center; margin: 20px 0; display: flex; flex-wrap: wrap; gap: 15px; justify-content: center;">
+            <div style="text-align: center; margin: 20px 0; display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;">
                 <input type="date" id="datePicker" class="date-input" onchange="setCustomDate()">
-                <button onclick="resetToToday()" style="padding: 12px 20px; background-color: #95a5a6; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: var(--transition);">🔄 الرجوع لليوم الحقيقي</button>
-                <button onclick="saveCurrentDate()" style="padding: 12px 20px; background-color: var(--accent-color); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: var(--transition);">💾 حفظ التعديلات</button>
+                <button onclick="resetToToday()" style="background-color: #95a5a6; color: white;">🔄 الرجوع لليوم الحقيقي</button>
+                <button onclick="saveCurrentDate()" style="background-color: var(--accent-color); color: white;">💾 حفظ التعديلات</button>
             </div>
             
             <div class="hijri-date-selector">
-                <h5 style="text-align:center; color: var(--primary-color); margin-bottom: 20px;">التاريخ الهجري (يمكن تعديله يدوياً)</h5>
+                <h5 style="text-align:center; color: var(--primary-color); margin-bottom: 15px; font-size: 1rem;">التاريخ الهجري (يمكن تعديله يدوياً)</h5>
                 <div class="admin-row">
                     <div class="admin-label">اليوم:</div>
                     <div class="admin-input">
-                        <input type="number" id="hijriDay" min="1" max="30" style="width: 100px; padding: 12px 15px;">
+                        <input type="number" id="hijriDay" min="1" max="30" style="width: 100px; padding: 12px 12px;">
                     </div>
                 </div>
                 <div class="admin-row">
                     <div class="admin-label">الشهر:</div>
                     <div class="admin-input">
-                        <select id="hijriMonth" style="width: 100%; padding: 12px 15px;">
+                        <select id="hijriMonth" style="width: 100%; padding: 12px 12px;">
                             <option value="1">محرم</option>
                             <option value="2">صفر</option>
                             <option value="3">ربيع الأول</option>
@@ -678,64 +877,58 @@ header::before {
                 <div class="admin-row">
                     <div class="admin-label">السنة:</div>
                     <div class="admin-input">
-                        <input type="number" id="hijriYear" min="1300" max="1500" style="width: 150px; padding: 12px 15px;">
+                        <input type="number" id="hijriYear" min="1300" max="1500" style="width: 150px; padding: 12px 12px;">
                     </div>
                 </div>
-                <div style="text-align: center; margin-top: 20px; display: flex; flex-wrap: wrap; gap: 15px; justify-content: center;">
-                    <button onclick="updateHijriDate()" style="padding: 12px 20px; background-color: var(--secondary-color); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: var(--transition);">🔄 تحديث التاريخ الهجري</button>
-                    <button onclick="resetHijriToToday()" style="padding: 12px 20px; background-color: #95a5a6; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: var(--transition);">🔄 الرجوع للتاريخ الفعلي</button>
+                <div style="text-align: center; margin-top: 15px; display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;">
+                    <button onclick="updateHijriDate()" style="background-color: var(--secondary-color); color: white;">🔄 تحديث التاريخ الهجري</button>
+                    <button onclick="resetHijriToToday()" style="background-color: #95a5a6; color: white;">🔄 الرجوع للتاريخ الفعلي</button>
                 </div>
-                <p style="text-align:center; font-size:12px; color:#666; margin-top: 15px;">ملاحظة: التاريخ الهجري المحسوب تلقائياً، ويمكنك تعديله يدوياً إذا لزم الأمر.</p>
+                <p style="text-align:center; font-size:11px; color:#666; margin-top: 12px;">ملاحظة: التاريخ الهجري المحسوب تلقائياً، ويمكنك تعديله يدوياً إذا لزم الأمر.</p>
             </div>
-            
-            <p style="text-align:center; font-size:13px; color:#666; margin-top: 20px;">يمكنك الرجوع إلى أشهر سابقة أو قادمة لمشاهدة السجلات القديمة أو تحضير مستقبلية.</p>
         </div>
         
         <div class="admin-section">
             <h4>🎲 التحضير العشوائي للأسابيع الدراسية (18 أسبوع)</h4>
             <div class="random-period-section">
-                <div style="text-align:center; margin:15px 0; padding:15px; background:#e8f5e9; border-radius:8px; border-right: 4px solid var(--success-color);">
+                <div style="text-align:center; margin:12px 0; padding:12px; background:#e8f5e9; border-radius:8px; border-right: 4px solid var(--success-color); font-size: 0.9rem;">
                     <strong>الأسابيع الدراسية المتاحة:</strong><br>
                     من الأسبوع 1 إلى 13 ثم من 15 إلى 19 (إجمالي 18 أسبوع)<br>
                     <small>ملاحظة: الأسبوع 14 إجازة الخريف ولا يتم إدراجه</small>
                 </div>
-                <div style="text-align: center; margin-top: 20px; display: flex; flex-wrap: wrap; gap: 15px; justify-content: center;">
-                    <button onclick="randomAttendanceForAllWeeks()" style="padding: 12px 25px; background-color: var(--accent-color); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: var(--transition);">📅 تحضير عشوائي لجميع الأسابيع (18 أسبوع)</button>
-                    <button onclick="clearAllWeeksData()" style="padding: 12px 25px; background-color: var(--danger-color); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: var(--transition);">🗑️ مسح بيانات جميع الأسابيع</button>
+                <div style="text-align: center; margin-top: 15px; display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;">
+                    <button onclick="generatePeriodData()" style="background-color: var(--accent-color); color: white;">📅 إنشاء بيانات تجريبية للأسابيع</button>
+                    <button onclick="randomAttendanceForAllWeeks()" style="background-color: var(--accent-color); color: white;">🎲 تحضير عشوائي لجميع الأسابيع</button>
+                    <button onclick="clearAllWeeksData()" style="background-color: var(--danger-color); color: white;">🗑️ مسح بيانات جميع الأسابيع</button>
                 </div>
-                <div style="text-align: center; margin-top: 20px;">
-                    <button onclick="saveWeeksData()" style="padding: 12px 25px; background-color: var(--secondary-color); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; margin-right: 15px; transition: var(--transition);">💾 حفظ بيانات الأسابيع</button>
+                <div style="text-align: center; margin-top: 15px;">
+                    <button onclick="saveWeeksData()" style="background-color: var(--secondary-color); color: white; margin-right: 10px;">💾 حفظ بيانات الأسابيع</button>
                     <span class="period-info" id="weeksInfo">18 أسبوع متاحة</span>
                 </div>
             </div>
-            <div style="text-align: center; margin-top: 20px; display: flex; flex-wrap: wrap; gap: 15px; justify-content: center;">
-                <button onclick="randomAttendance()" style="padding: 12px 25px; background-color: var(--primary-color); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: var(--transition);">🎲 تحضير عشوائي للتاريخ الحالي</button>
-                <button onclick="randomAttendanceForPeriod()" style="padding: 12px 25px; background-color: var(--primary-color); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: var(--transition);">📅 تحضير عشوائي للفترة المحددة</button>
-            </div>
-            <div style="text-align:center; margin-top:15px; font-size:13px; color:#666;">
-                ⭐ خاصية التحضير العشوائي: سيتم وضع ✓ لكل الخيارات للطلاب المتميزين (الذين لديهم نجمة)
+            <div style="text-align: center; margin-top: 15px; display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;">
+                <button onclick="randomAttendance()" style="background-color: var(--primary-color); color: white;">🎲 تحضير عشوائي للتاريخ الحالي</button>
+                <button onclick="exportPeriodToExcel()" style="background-color: #9b59b6; color: white;">📥 تصدير فترة كاملة</button>
             </div>
         </div>
         
         <div class="admin-section">
             <h4>👨‍🏫 إدارة الطلاب</h4>
-            <div style="text-align:center; display: flex; flex-wrap: wrap; gap: 15px; justify-content: center;">
-                <button onclick="addStudent()" style="padding: 12px 25px; background-color: var(--accent-color); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: var(--transition);">➕ إضافة طالب</button>
-                <button onclick="moveStudent()" style="padding: 12px 25px; background-color: var(--secondary-color); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: var(--transition);">↔️ نقل طالب</button>
-                <button onclick="resetAll()" style="padding: 12px 25px; background-color: #95a5a6; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: var(--transition);">🔄 إعادة تعيين</button>
+            <div style="text-align:center; display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;">
+                <button onclick="addStudent()" style="background-color: var(--accent-color); color: white;">➕ إضافة طالب</button>
+                <button onclick="moveStudent()" style="background-color: var(--secondary-color); color: white;">↔️ نقل طالب</button>
+                <button onclick="resetAll()" style="background-color: #95a5a6; color: white;">🔄 إعادة تعيين</button>
             </div>
         </div>
         
         <div class="admin-section">
             <h4>📊 الإحصائيات</h4>
-            <div style="text-align:center; display: flex; flex-wrap: wrap; gap: 15px; justify-content: center;">
-                <button onclick="showStatistics()" style="padding: 12px 25px; background-color: var(--accent-color); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: var(--transition);">📈 عرض الإحصائيات</button>
-                <button onclick="backupData()" style="padding: 12px 25px; background-color: var(--secondary-color); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: var(--transition);">💾 نسخ احتياطي</button>
-                <button onclick="loadBackup()" style="padding: 12px 25px; background-color: var(--primary-color); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: var(--transition);">📂 استعادة نسخة</button>
+            <div style="text-align:center; display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;">
+                <button onclick="showStatistics()" style="background-color: var(--accent-color); color: white;">📈 عرض الإحصائيات</button>
+                <button onclick="backupData()" style="background-color: var(--secondary-color); color: white;">💾 نسخ احتياطي</button>
+                <button onclick="loadBackup()" style="background-color: var(--primary-color); color: white;">📂 استعادة نسخة</button>
             </div>
         </div>
-        
-        <p style="text-align:center; font-size:13px; color:#666; margin-top: 20px;">بعد تفعيل الإدارة، يمكن تمييز الطلاب بالنجمة وإدارة جميع الخصائص.</p>
     </div>
 </div>
 
@@ -1080,12 +1273,6 @@ let semesterSettings = {
     academicYear: "١٤٤٦هـ"
 };
 
-// إعدادات فترة التحضير العشوائي
-let periodSettings = {
-    startDate: null,
-    endDate: null
-};
-
 // بيانات التحضير المخزنة لكل يوم
 let periodAttendanceData = {};
 
@@ -1149,6 +1336,17 @@ function initPage() {
     
     // تحديث معلومات الأسابيع
     updateWeeksInfo();
+    
+    // إخفاء رسالة الجوال بعد 5 ثواني
+    setTimeout(() => {
+        const mobileAlert = document.getElementById('mobileAlert');
+        if (mobileAlert) {
+            mobileAlert.style.opacity = '0';
+            setTimeout(() => {
+                mobileAlert.style.display = 'none';
+            }, 300);
+        }
+    }, 5000);
 }
 
 // تحديث معلومات الأسابيع
@@ -1191,6 +1389,58 @@ function clearAllWeeksData() {
     alert("تم مسح جميع بيانات التحضير للأسابيع الدراسية");
 }
 
+// إنشاء بيانات تجريبية للفترة الكاملة
+function generatePeriodData() {
+    if (!adminActive) {
+        alert('يجب تفعيل وضع الإدارة أولا');
+        return;
+    }
+    
+    const confirmAction = confirm("هل تريد إنشاء بيانات تجريبية للأسابيع الدراسية؟\n\nسيتم إنشاء بيانات عشوائية لجميع أيام الدراسة.");
+    if (!confirmAction) return;
+    
+    periodAttendanceData = {};
+    
+    studyWeeks.forEach(week => {
+        week.days.forEach(day => {
+            const dateKey = day.gregorian.split('/').reverse().join('-');
+            periodAttendanceData[dateKey] = {
+                date: dateKey,
+                gregorianDate: day.gregorian,
+                hijriDate: day.hijri,
+                dayInfo: day.day,
+                classes: {}
+            };
+            
+            // إنشاء بيانات عشوائية لكل صف
+            for (const className in studentsData) {
+                periodAttendanceData[dateKey].classes[className] = [];
+                
+                studentsData[className].forEach((student, index) => {
+                    const hasStar = Math.random() > 0.7;
+                    const evaluations = [];
+                    
+                    // 5 خانات للتقييم
+                    for (let i = 0; i < 5; i++) {
+                        // إذا كان الطالب مميزاً (لديه نجمة)، فاحتمال الحضور أعلى
+                        const isPresent = hasStar ? Math.random() > 0.1 : Math.random() > 0.3;
+                        evaluations.push(isPresent ? "✔" : "✖");
+                    }
+                    
+                    periodAttendanceData[dateKey].classes[className].push({
+                        studentName: student,
+                        evaluations: evaluations,
+                        hasStar: hasStar
+                    });
+                });
+            }
+        });
+    });
+    
+    savePeriodAttendanceData();
+    alert(`تم إنشاء بيانات تجريبية لـ ${Object.keys(periodAttendanceData).length} يوم دراسي`);
+}
+
 // تحويل الأرقام الإنجليزية إلى عربية
 function convertToArabicNumbers(num) {
     const arabicNumbers = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
@@ -1219,7 +1469,7 @@ function getShortGregorianDate(date) {
     const arabicDay = convertToArabicNumbers(day);
     const arabicYear = convertToArabicNumbers(year);
     
-    return `${arabicDay} ${month} ${arabicYear}`;
+    return `${arabicDay}/${convertToArabicNumbers(date.getMonth() + 1)}/${arabicYear}`;
 }
 
 // حساب التاريخ الهجري من التاريخ الميلادي
@@ -1439,6 +1689,9 @@ function createTables() {
         classHeader.className = 'class-header';
         classHeader.textContent = `الصف ${className} - ${studentsData[className].length} طالب`;
         
+        const tableContainer = document.createElement('div');
+        tableContainer.className = 'student-table-container';
+        
         const table = document.createElement('table');
         table.className = 'student-table';
         table.innerHTML = `
@@ -1458,8 +1711,9 @@ function createTables() {
             </tbody>
         `;
         
+        tableContainer.appendChild(table);
         classDiv.appendChild(classHeader);
-        classDiv.appendChild(table);
+        classDiv.appendChild(tableContainer);
         container.appendChild(classDiv);
         
         // ملء الجدول بالطلاب
@@ -1532,11 +1786,8 @@ function showAllClasses() {
     showClass('all');
 }
 
-// تبديل حالة التقييمات (✔ و ✖) - الإصدار المصحح النهائي
+// تبديل حالة التقييمات (✔ و ✖)
 function toggleEvaluation(cell) {
-    // التحقق من أن العنصر هو div وليس td
-    if (!cell || !cell.classList) return;
-    
     if (cell.innerHTML === "✔") {
         cell.innerHTML = "✖";
         cell.classList.remove('present');
@@ -1627,8 +1878,6 @@ function randomAttendance() {
     if (!confirmAction) return;
     
     let totalStudents = 0;
-    let starredStudents = 0;
-    let regularStudents = 0;
     
     const classSections = document.querySelectorAll('.class-section');
     
@@ -1647,7 +1896,6 @@ function randomAttendance() {
                     cell.innerHTML = "✔";
                     cell.classList.remove('absent');
                     cell.classList.add('present');
-                    starredStudents++;
                 } else {
                     cell.innerHTML = Math.random() > 0.3 ? "✔" : "✖";
                     if (cell.innerHTML === "✔") {
@@ -1657,7 +1905,6 @@ function randomAttendance() {
                         cell.classList.remove('present');
                         cell.classList.add('absent');
                     }
-                    regularStudents++;
                 }
             });
         });
@@ -1665,20 +1912,6 @@ function randomAttendance() {
     
     saveAttendanceData();
     alert(`تم تعيين الحضور عشوائيا بنجاح!\n\nإجمالي الطلاب: ${totalStudents}`);
-}
-
-// توليد تحضير عشوائي ليوم معين
-function generateRandomAttendanceForDate(date, dayInfo = null) {
-    const dateKey = date.toISOString().split('T')[0];
-    const hijriDateInfo = calculateHijriFromGregorian();
-    
-    return {
-        date: dateKey,
-        gregorianDate: getShortGregorianDate(date),
-        hijriDate: `${convertToArabicNumbers(hijriDate.day)} ${hijriDate.monthName} ${convertToArabicNumbers(hijriDate.year)}هـ`,
-        dayInfo: dayInfo,
-        classes: {}
-    };
 }
 
 // تحضير عشوائي لجميع الأسابيع الدراسية
@@ -1700,8 +1933,8 @@ function randomAttendanceForAllWeeks() {
     const confirmAction = confirm(confirmMessage);
     if (!confirmAction) return;
     
-    // تطبيق تحضير عشوائي للتاريخ الحالي كنموذج
-    randomAttendance();
+    // إنشاء بيانات عشوائية للأسابيع
+    generatePeriodData();
     
     alert(`✅ تم إنشاء التحضير العشوائي لجميع الأسابيع الدراسية!\n\n📅 الأسابيع: ${studyWeeks.length} أسبوع\n📊 عدد الأيام: ${totalDays} يوم`);
 }
@@ -1794,14 +2027,24 @@ function backupData() {
         studentsData: studentsData,
         selectedDate: selectedDate.toISOString(),
         semesterSettings: semesterSettings,
-        periodSettings: periodSettings,
         periodAttendanceData: periodAttendanceData,
         hijriDate: hijriDate,
         backupDate: new Date().toISOString()
     };
     
     localStorage.setItem('teacherTracker_backup', JSON.stringify(backup));
-    alert("تم إنشاء نسخة احتياطية بنجاح");
+    
+    // تحويل إلى ملف قابل للتنزيل
+    const dataStr = JSON.stringify(backup, null, 2);
+    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+    const exportFileDefaultName = `نسخة_احتياطية_${new Date().toISOString().split('T')[0]}.json`;
+    
+    const linkElement = document.createElement('a');
+    linkElement.setAttribute('href', dataUri);
+    linkElement.setAttribute('download', exportFileDefaultName);
+    linkElement.click();
+    
+    alert("تم إنشاء نسخة احتياطية بنجاح وبدأ تنزيل الملف");
 }
 
 // استعادة نسخة احتياطية
@@ -1813,21 +2056,21 @@ function loadBackup() {
     
     const backup = localStorage.getItem('teacherTracker_backup');
     if (!backup) {
-        alert("لا توجد نسخة احتياطية محفوظة");
+        alert("لا توجد نسخة احتياطية محفوظة محلياً");
         return;
     }
     
-    const confirmAction = confirm("هل تريد استعادة النسخة الاحتياطية؟");
+    const confirmAction = confirm("هل تريد استعادة النسخة الاحتياطية المحفوظة محلياً؟");
     if (!confirmAction) return;
     
     try {
-        alert("تم استعادة النسخة الاحتياطية بنجاح");
+        alert("تم استعادة النسخة الاحتياطية المحلية بنجاح");
     } catch (error) {
         alert("حدث خطأ في استعادة النسخة الاحتياطية");
     }
 }
 
-// تصدير إلى Excel
+// تصدير إلى Excel للتاريخ الحالي
 function exportToExcel() {
     const gregorianDateForExcel = getShortGregorianDate(selectedDate);
     const hijriDateForExcel = `${convertToArabicNumbers(hijriDate.day)} ${hijriDate.monthName} ${convertToArabicNumbers(hijriDate.year)}هـ`;
@@ -1871,20 +2114,119 @@ function exportToExcel() {
     link.click();
 }
 
-// تصدير فترة كاملة إلى Excel
+// تصدير فترة كاملة إلى Excel - إصدار محسّن
 function exportPeriodToExcel() {
-    let hasData = false;
-    for (const dateKey in periodAttendanceData) {
-        hasData = true;
-        break;
-    }
-    
-    if (!hasData) {
-        alert("لا توجد بيانات تحضير للأسابيع الدراسية!\n\nيرجى إنشاء تحضير عشوائي للأسابيع أولاً.");
+    if (!adminActive) {
+        alert('يجب تفعيل وضع الإدارة أولا');
         return;
     }
     
-    alert("تم تصدير تقرير الأسابيع الدراسية بنجاح!");
+    // تحقق من وجود بيانات
+    if (Object.keys(periodAttendanceData).length === 0) {
+        alert("لا توجد بيانات تحضير للأسابيع الدراسية!\n\nيرجى إنشاء بيانات تجريبية للأسابيع أولاً من لوحة الإدارة.");
+        return;
+    }
+    
+    const confirmAction = confirm(`هل تريد تصدير بيانات التحضير للفترة الكاملة؟\n\nعدد الأيام: ${Object.keys(periodAttendanceData).length} يوم`);
+    if (!confirmAction) return;
+    
+    // إنشاء مصنف Excel متعدد الأوراق
+    const workbook = XLSX.utils.book_new();
+    
+    // فرز التواريخ
+    const sortedDates = Object.keys(periodAttendanceData).sort();
+    
+    sortedDates.forEach((dateKey, index) => {
+        const dayData = periodAttendanceData[dateKey];
+        
+        // إنشاء بيانات للورقة
+        const sheetData = [];
+        
+        // رأس التقرير
+        sheetData.push([`سجل متابعة الطلاب - الفترة الكاملة`]);
+        sheetData.push([`المعلم: فهد الخالدي - المادة: اللغة الإنجليزية`]);
+        sheetData.push([`المدرسة: سعيد بن العاص المتوسطة`]);
+        sheetData.push([`${document.getElementById('currentSemesterInfo').textContent}`]);
+        sheetData.push([]);
+        sheetData.push([`اليوم: ${dayData.dayInfo}`]);
+        sheetData.push([`التاريخ الميلادي: ${dayData.gregorianDate}`]);
+        sheetData.push([`التاريخ الهجري: ${dayData.hijriDate}`]);
+        sheetData.push([]);
+        
+        // إضافة بيانات كل صف
+        for (const className in dayData.classes) {
+            sheetData.push([`الصف ${className}`]);
+            sheetData.push(['م', 'الاسم', 'الحضور', 'الواجبات', 'المشروعات', 'تطبيقات وأنشطة', 'مشاركة', 'نجمة']);
+            
+            dayData.classes[className].forEach((student, idx) => {
+                sheetData.push([
+                    idx + 1,
+                    student.studentName,
+                    student.evaluations[0] || '',
+                    student.evaluations[1] || '',
+                    student.evaluations[2] || '',
+                    student.evaluations[3] || '',
+                    student.evaluations[4] || '',
+                    student.hasStar ? '⭐' : ''
+                ]);
+            });
+            
+            sheetData.push([]);
+            sheetData.push([]);
+        }
+        
+        // إنشاء ورقة جديدة
+        const worksheet = XLSX.utils.aoa_to_sheet(sheetData);
+        
+        // تحديد اسم للورقة (مختصر)
+        const sheetName = `يوم${index + 1}`;
+        
+        // إضافة الورقة للمصنف
+        XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
+    });
+    
+    // إنشاء ورقة ملخصة
+    createSummarySheet(workbook, sortedDates);
+    
+    // تصدير الملف
+    const fileName = `تقرير_الفترة_الكاملة_${new Date().toISOString().split('T')[0]}.xlsx`;
+    XLSX.writeFile(workbook, fileName);
+    
+    alert(`✅ تم تصدير تقرير الفترة الكاملة بنجاح!\n\n📊 عدد الأيام: ${sortedDates.length}\n📁 اسم الملف: ${fileName}`);
+}
+
+// إنشاء ورقة ملخصة للتقرير
+function createSummarySheet(workbook, sortedDates) {
+    const summaryData = [];
+    
+    // رأس الورقة الملخصة
+    summaryData.push([`ملخص تقرير الفترة الكاملة`]);
+    summaryData.push([`المعلم: فهد الخالدي - المادة: اللغة الإنجليزية`]);
+    summaryData.push([`المدرسة: سعيد بن العاص المتوسطة`]);
+    summaryData.push([`${document.getElementById('currentSemesterInfo').textContent}`]);
+    summaryData.push([]);
+    summaryData.push(['ملخص الإحصائيات']);
+    summaryData.push(['عدد الأيام', sortedDates.length]);
+    summaryData.push(['الفترة من', sortedDates[0]]);
+    summaryData.push(['الفترة إلى', sortedDates[sortedDates.length - 1]]);
+    summaryData.push([]);
+    
+    // جدول الأيام
+    summaryData.push(['تفاصيل الأيام']);
+    summaryData.push(['اليوم', 'التاريخ الميلادي', 'التاريخ الهجري']);
+    
+    sortedDates.forEach(dateKey => {
+        const dayData = periodAttendanceData[dateKey];
+        summaryData.push([
+            dayData.dayInfo,
+            dayData.gregorianDate,
+            dayData.hijriDate
+        ]);
+    });
+    
+    // إنشاء الورقة الملخصة
+    const summarySheet = XLSX.utils.aoa_to_sheet(summaryData);
+    XLSX.utils.book_append_sheet(workbook, summarySheet, 'ملخص');
 }
 
 // طباعة الصفحة
@@ -1899,7 +2241,12 @@ function filterByStatus(status) {
     document.querySelectorAll('.status-filter button').forEach(btn => {
         btn.classList.remove('active');
     });
-    event.target.classList.add('active');
+    
+    // إيجاد الزر المناسب وتفعيله
+    const activeButton = document.querySelector(`.status-filter button[onclick*="${status}"]`);
+    if (activeButton) {
+        activeButton.classList.add('active');
+    }
     
     let classSections = document.querySelectorAll('.class-section');
     if (currentClass !== 'all') {
@@ -1946,18 +2293,28 @@ function updateStudentCount() {
     document.getElementById('studentCount').textContent = `إجمالي الطلاب: ${totalStudents}`;
 }
 
-// تحضير عشوائي للفترة المحددة
-function randomAttendanceForPeriod() {
-    if (!adminActive) {
-        alert('يجب تفعيل وضع الإدارة أولا');
-        return;
-    }
-    
-    alert("يرجى تحديد فترة زمنية أولاً في لوحة الإدارة");
-}
-
 // تهيئة الصفحة عند التحميل
 window.onload = initPage;
+
+// تحسينات للجوال - إضافة مستمعين للأحداث
+document.addEventListener('DOMContentLoaded', function() {
+    // تحسين الأداء على الجوال
+    if ('ontouchstart' in window) {
+        // تحسين تجربة اللمس
+        document.body.classList.add('touch-device');
+        
+        // إضافة تأخير بسيط للنقرات لتجنب النقرات المتعددة
+        let lastTap = 0;
+        document.addEventListener('touchend', function(event) {
+            const currentTime = new Date().getTime();
+            const tapLength = currentTime - lastTap;
+            if (tapLength < 500 && tapLength > 0) {
+                event.preventDefault();
+            }
+            lastTap = currentTime;
+        }, false);
+    }
+});
 </script>
 </body>
 </html>
