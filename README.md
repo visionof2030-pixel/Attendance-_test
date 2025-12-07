@@ -132,6 +132,7 @@ button:hover {
 .star-cell {
     color: #ffd700;
     font-size: 16px;
+    cursor: pointer;
 }
 
 .present {
@@ -401,6 +402,10 @@ input[type="password"], input[type="text"], select {
     100% { transform: rotate(360deg); }
 }
 
+.week-button:active {
+    transform: scale(0.98);
+}
+
 @media print {
     button, .admin-panel, .status-filter, .class-tabs, .week-buttons-container, 
     .selected-weeks-display, .export-section, .student-management {
@@ -534,10 +539,6 @@ input[type="password"], input[type="text"], select {
                 <button onclick="randomAttendanceForSelectedWeeks()" style="background: #4CAF50; padding: 12px 24px; font-size: 16px;">
                     🎲 تحضير عشوائي للأسابيع المحددة
                 </button>
-            </div>
-            
-            <div style="text-align:center; margin-top:10px; font-size:12px; color:#666;">
-                ⭐ خاصية التحضير العشوائي: سيتم وضع ✓ لكل الخيارات للطلاب المتميزين (الذين لديهم نجمة ⭐)
             </div>
         </div>
         
@@ -782,7 +783,7 @@ let currentClass = 'all';
 
 // إعدادات الفصل الدراسي
 let semesterSettings = {
-    semester: "2", // 1 للترم الأول، 2 للترم الثاني
+    semester: "2",
     academicYear: "١٤٤٦-١٤٤٧هـ"
 };
 
@@ -813,7 +814,6 @@ function initPage() {
     const savedWeeks = localStorage.getItem('teacherTracker_selectedWeeks');
     if (savedWeeks) {
         selectedWeeks = JSON.parse(savedWeeks);
-        updateSelectedWeeksDisplay();
     }
     
     // محاولة تحميل بيانات التحضير المحفوظة
@@ -825,10 +825,11 @@ function initPage() {
     updateStudentCount();
     updateDateDisplay();
     refreshStudentList();
+    updateWeekButtons(); // تأكد من تحديث أزرار الأسابيع عند التحميل
     
     // تحديث التاريخ تلقائياً
     updateCurrentDate();
-    setInterval(updateCurrentDate, 60000); // تحديث كل دقيقة
+    setInterval(updateCurrentDate, 60000);
 }
 
 // تحديث التاريخ الحالي
@@ -884,6 +885,7 @@ function createWeekButtons() {
         const button = document.createElement('button');
         button.className = 'week-button';
         button.id = `week-${week}`;
+        button.setAttribute('data-week', week);
         
         if (weekData.holiday) {
             button.classList.add('holiday');
@@ -900,13 +902,18 @@ function createWeekButtons() {
                 <span style="font-size:10px; color:#666;">(${weekData.days} أيام)</span>
             `;
             button.title = `${weekData.name} - ${weekData.days} أيام دراسية`;
-            button.onclick = function() { toggleWeekSelection(week); };
+            
+            // إضافة حدث النقر بشكل صحيح
+            button.addEventListener('click', function() {
+                toggleWeekSelection(week);
+            });
         }
         
         firstSemesterContainer.appendChild(button);
     }
     
     updateWeekButtons();
+    updateSelectedWeeksDisplay(); // تحديث العرض بعد إنشاء الأزرار
 }
 
 // تنسيق التاريخ للعرض
@@ -918,11 +925,15 @@ function formatDateForDisplay(dateStr) {
 
 // تبديل اختيار الأسبوع
 function toggleWeekSelection(week) {
+    console.log('Toggle week:', week); // للمساعدة في التصحيح
+    
     const index = selectedWeeks.indexOf(week);
     if (index === -1) {
         selectedWeeks.push(week);
+        console.log('Added week:', week, 'Selected weeks:', selectedWeeks);
     } else {
         selectedWeeks.splice(index, 1);
+        console.log('Removed week:', week, 'Selected weeks:', selectedWeeks);
     }
     
     // ترتيب الأسابيع تصاعدياً
@@ -935,11 +946,14 @@ function toggleWeekSelection(week) {
 
 // تحديث مظهر أزرار الأسابيع
 function updateWeekButtons() {
+    console.log('Updating week buttons, selected weeks:', selectedWeeks);
+    
     for (let week = 1; week <= 19; week++) {
         const button = document.getElementById(`week-${week}`);
-        if (button) {
+        if (button && !button.disabled) {
             if (selectedWeeks.includes(week)) {
                 button.classList.add('selected');
+                console.log('Week', week, 'is selected');
             } else {
                 button.classList.remove('selected');
             }
@@ -1044,7 +1058,7 @@ function savePeriodAttendanceData() {
 // تحضير عشوائي للأسابيع المحددة
 function randomAttendanceForSelectedWeeks() {
     if (!adminActive) {
-        alert('يجب تفعيل وضع الإدارة أولا\nكلمة المرور: 1406');
+        alert('يجب تفعيل وضع الإدارة أولا');
         return;
     }
     
@@ -1083,7 +1097,7 @@ function randomAttendanceForSelectedWeeks() {
             
             // معالجة كل يوم في الأسبوع
             for (let day = 1; day <= week.days; day++) {
-                // إنشاء تاريخ افتراضي (يمكن تحسين هذا الجزء لاستخدام التواريخ الفعلية)
+                // إنشاء تاريخ افتراضي
                 const date = new Date();
                 date.setDate(date.getDate() + (weekNum - 1) * 7 + day);
                 
@@ -1254,7 +1268,7 @@ function exportSelectedWeeks() {
             tablesHTML += `<h3 style="background:#e8f5e9; padding:10px; margin-top:20px;">${week.name}</h3>`;
             tablesHTML += `<p style="text-align:center;">${week.startDate} - ${week.endDate} (${week.days} أيام)</p>`;
             
-            // إنشاء جداول وهمية للبيانات (يمكن استبدالها بالبيانات الفعلية)
+            // إنشاء جداول وهمية للبيانات
             for (const className in studentsData) {
                 const classSize = studentsData[className].length;
                 
@@ -1276,7 +1290,7 @@ function exportSelectedWeeks() {
                     tablesHTML += `<td>${index + 1}</td>`;
                     tablesHTML += `<td>${student}</td>`;
                     
-                    // بيانات وهمية (يمكن استبدالها بالبيانات الفعلية)
+                    // بيانات وهمية
                     for (let i = 0; i < 5; i++) {
                         const isPresent = Math.random() > 0.3;
                         tablesHTML += `<td style="${isPresent ? 'background-color:#e8f5e9;' : 'background-color:#ffebee;'}">${isPresent ? '✔' : '✖'}</td>`;
@@ -1639,7 +1653,7 @@ function toggle(cell) {
     }
 }
 
-// تبديل النجمة
+// تبديل النجمة - تم التعديل لإزالة التلميح بكلمة المرور
 function toggleStar(cell) {
     if (adminActive) {
         cell.innerHTML = cell.innerHTML === "☆" ? "⭐" : "☆";
@@ -1650,11 +1664,11 @@ function toggleStar(cell) {
             row.classList.remove('starred-student');
         }
     } else {
-        alert('يجب تفعيل وضع الإدارة أولا\nكلمة المرور: 1406');
+        alert('يجب تفعيل وضع الإدارة أولا');
     }
 }
 
-// التحقق من كلمة المرور
+// التحقق من كلمة المرور - تم التعديل لإزالة التلميح بكلمة المرور
 function checkAdmin() {
     const pass = document.getElementById("adminPass").value;
     if (pass === "1406") {
@@ -1663,19 +1677,19 @@ function checkAdmin() {
         document.getElementById("adminPass").value = "";
         
         if (adminActive) {
-            alert("✅ تم تفعيل خصائص الإدارة بنجاح!\n\nيمكنك الآن:\n1. اختيار الأسابيع المطلوبة\n2. التحضير العشوائي\n3. إدارة الطلاب");
+            alert("✅ تم تفعيل خصائص الإدارة بنجاح!");
         } else {
             alert("تم إغلاق لوحة الإدارة");
         }
     } else {
-        alert("❌ كلمة مرور خاطئة!\nكلمة المرور الصحيحة: 1406");
+        alert("❌ كلمة مرور خاطئة!");
     }
 }
 
 // تحضير عشوائي للتاريخ الحالي
 function randomAttendance() {
     if (!adminActive) {
-        alert('يجب تفعيل وضع الإدارة أولا\nكلمة المرور: 1406');
+        alert('يجب تفعيل وضع الإدارة أولا');
         return;
     }
     
@@ -1818,6 +1832,11 @@ function updateStudentCount() {
     }
     
     document.getElementById('studentCount').textContent = `إجمالي الطلاب: ${totalStudents}`;
+}
+
+// تحديث عرض التاريخ
+function updateDateDisplay() {
+    updateCurrentDate();
 }
 
 // عرض تحضير اليوم
