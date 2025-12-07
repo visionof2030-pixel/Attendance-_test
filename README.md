@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
@@ -427,6 +427,29 @@ input[type="password"], input[type="text"], select {
     padding: 6px 12px;
 }
 
+.weekly-batch-display {
+    background: #e8f5e9;
+    border: 1px solid #4CAF50;
+    border-radius: 5px;
+    padding: 15px;
+    margin: 15px 0;
+}
+
+.batch-title {
+    font-size: 16px;
+    font-weight: bold;
+    color: #1a5276;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.batch-content {
+    background: white;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+}
+
 @media print {
     button, .admin-panel, .status-filter, .class-tabs, .week-checkboxes-container, 
     .selected-weeks-display, .export-section, .student-management {
@@ -537,21 +560,21 @@ input[type="password"], input[type="text"], select {
             <div class="week-controls">
                 <button onclick="selectAllWeeks()">📋 تحديد الكل</button>
                 <button onclick="clearSelectedWeeks()">🗑️ مسح الكل</button>
-                <button onclick="selectFirstSemesterWeeks()">📚 الترم الأول (1-19)</button>
+                <button onclick="selectFirstSemesterWeeks()">📚 الترم الأول (18 أسبوع)</button>
             </div>
             
             <div class="batch-selection">
                 <strong>تحديد دفعات:</strong>
                 <div class="batch-buttons">
-                    <button onclick="selectWeeksRange(1, 5)">الأسابيع 1-5</button>
-                    <button onclick="selectWeeksRange(6, 10)">الأسابيع 6-10</button>
-                    <button onclick="selectWeeksRange(11, 15)">الأسابيع 11-15</button>
-                    <button onclick="selectWeeksRange(16, 19)">الأسابيع 16-19</button>
+                    <button onclick="selectWeeksRange(1, 5)">الدفعة 1 (1-5)</button>
+                    <button onclick="selectWeeksRange(6, 10)">الدفعة 2 (6-10)</button>
+                    <button onclick="selectWeeksRange(11, 13)">الدفعة 3 (11-13)</button>
+                    <button onclick="selectWeeksRange(14, 18)">الدفعة 4 (15-19)</button>
                 </div>
             </div>
             
             <div class="week-checkboxes-container">
-                <div class="semester-title">الترم الأول (الأسابيع 1-19)</div>
+                <div class="semester-title">الترم الأول (18 أسبوع دراسي)</div>
                 <div class="weeks-grid" id="weeksCheckboxesContainer">
                     <!-- سيتم إنشاء مربعات اختيار الأسابيع هنا -->
                 </div>
@@ -779,27 +802,26 @@ const studentsData = {
     ]
 };
 
-// بيانات الأسابيع الدراسية للترم الأول (1-19)
+// تعريف الأسابيع الجديد مع الترقيم 1-19 (تم إعادة ترقيم 14-18 لتصبح 15-19)
 const studyWeeks = {
-    1: { name: "الأسبوع 1", days: 5, startDate: "2025/08/24", endDate: "2025/08/28", hijri: "1447/03/01 - 1447/03/05" },
-    2: { name: "الأسبوع 2", days: 5, startDate: "2025/08/31", endDate: "2025/09/04", hijri: "1447/03/08 - 1447/03/12" },
-    3: { name: "الأسبوع 3", days: 5, startDate: "2025/09/07", endDate: "2025/09/11", hijri: "1447/03/15 - 1447/03/19" },
-    4: { name: "الأسبوع 4", days: 5, startDate: "2025/09/14", endDate: "2025/09/18", hijri: "1447/03/22 - 1447/03/26" },
-    5: { name: "الأسبوع 5", days: 5, startDate: "2025/09/21", endDate: "2025/09/25", hijri: "1447/03/29 - 1447/04/02" },
-    6: { name: "الأسبوع 6", days: 5, startDate: "2025/09/28", endDate: "2025/10/02", hijri: "1447/04/05 - 1447/04/09" },
-    7: { name: "الأسبوع 7", days: 5, startDate: "2025/10/05", endDate: "2025/10/09", hijri: "1447/04/12 - 1447/04/16" },
-    8: { name: "الأسبوع 8", days: 4, startDate: "2025/10/13", endDate: "2025/10/16", hijri: "1447/04/20 - 1447/04/23" },
-    9: { name: "الأسبوع 9", days: 5, startDate: "2025/10/19", endDate: "2025/10/23", hijri: "1447/04/26 - 1447/04/30" },
-    10: { name: "الأسبوع 10", days: 5, startDate: "2025/10/26", endDate: "2025/10/30", hijri: "1447/05/03 - 1447/05/07" },
-    11: { name: "الأسبوع 11", days: 5, startDate: "2025/11/02", endDate: "2025/11/06", hijri: "1447/05/10 - 1447/05/14" },
-    12: { name: "الأسبوع 12", days: 5, startDate: "2025/11/09", endDate: "2025/11/13", hijri: "1447/05/17 - 1447/05/21" },
-    13: { name: "الأسبوع 13", days: 5, startDate: "2025/11/16", endDate: "2025/11/20", hijri: "1447/05/24 - 1447/05/28" },
-    14: { name: "الأسبوع 14", days: 0, startDate: "إجازة", endDate: "إجازة", hijri: "إجازة", holiday: true },
-    15: { name: "الأسبوع 15", days: 4, startDate: "2025/11/30", endDate: "2025/12/03", hijri: "1447/06/09 - 1447/06/12" },
-    16: { name: "الأسبوع 16", days: 4, startDate: "2025/12/08", endDate: "2025/12/11", hijri: "1447/06/17 - 1447/06/20" },
-    17: { name: "الأسبوع 17", days: 5, startDate: "2025/12/14", endDate: "2025/12/18", hijri: "1447/06/23 - 1447/06/27" },
-    18: { name: "الأسبوع 18", days: 5, startDate: "2025/12/21", endDate: "2025/12/25", hijri: "1447/07/01 - 1447/07/05" },
-    19: { name: "الأسبوع 19", days: 5, startDate: "2025/12/28", endDate: "2026/01/01", hijri: "1447/07/08 - 1447/07/12" }
+    1: { name: "الأسبوع الأول", days: 5, startDate: "2025/08/24", endDate: "2025/08/28", hijri: "1447/03/01 - 1447/03/05" },
+    2: { name: "الأسبوع الثاني", days: 5, startDate: "2025/08/31", endDate: "2025/09/04", hijri: "1447/03/08 - 1447/03/12" },
+    3: { name: "الأسبوع الثالث", days: 5, startDate: "2025/09/07", endDate: "2025/09/11", hijri: "1447/03/15 - 1447/03/19" },
+    4: { name: "الأسبوع الرابع", days: 5, startDate: "2025/09/14", endDate: "2025/09/18", hijri: "1447/03/22 - 1447/03/26" },
+    5: { name: "الأسبوع الخامس", days: 5, startDate: "2025/09/21", endDate: "2025/09/25", hijri: "1447/03/29 - 1447/04/02" },
+    6: { name: "الأسبوع السادس", days: 5, startDate: "2025/09/28", endDate: "2025/10/02", hijri: "1447/04/05 - 1447/04/09" },
+    7: { name: "الأسبوع السابع", days: 5, startDate: "2025/10/05", endDate: "2025/10/09", hijri: "1447/04/12 - 1447/04/16" },
+    8: { name: "الأسبوع الثامن", days: 4, startDate: "2025/10/13", endDate: "2025/10/16", hijri: "1447/04/20 - 1447/04/23" },
+    9: { name: "الأسبوع التاسع", days: 5, startDate: "2025/10/19", endDate: "2025/10/23", hijri: "1447/04/26 - 1447/04/30" },
+    10: { name: "الأسبوع العاشر", days: 5, startDate: "2025/10/26", endDate: "2025/10/30", hijri: "1447/05/03 - 1447/05/07" },
+    11: { name: "الأسبوع الحادي عشر", days: 5, startDate: "2025/11/02", endDate: "2025/11/06", hijri: "1447/05/10 - 1447/05/14" },
+    12: { name: "الأسبوع الثاني عشر", days: 5, startDate: "2025/11/09", endDate: "2025/11/13", hijri: "1447/05/17 - 1447/05/21" },
+    13: { name: "الأسبوع الثالث عشر", days: 5, startDate: "2025/11/16", endDate: "2025/11/20", hijri: "1447/05/24 - 1447/05/28" },
+    14: { name: "الأسبوع الخامس عشر", days: 4, startDate: "2025/11/30", endDate: "2025/12/03", hijri: "1447/06/09 - 1447/06/12" },
+    15: { name: "الأسبوع السادس عشر", days: 4, startDate: "2025/12/08", endDate: "2025/12/11", hijri: "1447/06/17 - 1447/06/20" },
+    16: { name: "الأسبوع السابع عشر", days: 5, startDate: "2025/12/14", endDate: "2025/12/18", hijri: "1447/06/23 - 1447/06/27" },
+    17: { name: "الأسبوع الثامن عشر", days: 5, startDate: "2025/12/21", endDate: "2025/12/25", hijri: "1447/07/01 - 1447/07/05" },
+    18: { name: "الأسبوع التاسع عشر", days: 5, startDate: "2025/12/28", endDate: "2026/01/01", hijri: "1447/07/08 - 1447/07/12" }
 };
 
 // حالة الإدارة
@@ -1197,6 +1219,8 @@ function exportToExcel() {
     const dateStr = now.toISOString().split('T')[0];
     link.download = `تقرير_حضور_${dateStr}.xls`;
     link.click();
+    
+    alert("✅ تم تصدير التقرير بنجاح!");
 }
 
 // طباعة الصفحة
@@ -1331,38 +1355,31 @@ function createWeekCheckboxes() {
     const container = document.getElementById('weeksCheckboxesContainer');
     container.innerHTML = '';
     
-    // إنشاء مربعات اختيار للأسابيع 1-19
-    for (let week = 1; week <= 19; week++) {
+    // إنشاء مربعات اختيار للأسابيع 1-18 (باستخدام النظام الجديد)
+    for (let week = 1; week <= 18; week++) {
         const weekData = studyWeeks[week];
         const checkboxItem = document.createElement('div');
         checkboxItem.className = 'week-checkbox-item';
         checkboxItem.id = `week-checkbox-${week}`;
-        
-        if (weekData.holiday) {
-            checkboxItem.classList.add('holiday');
-        }
         
         const checkboxId = `week${week}`;
         
         checkboxItem.innerHTML = `
             <input type="checkbox" id="${checkboxId}" class="week-checkbox" 
                    data-week="${week}" 
-                   ${weekData.holiday ? 'disabled' : ''}
                    ${selectedWeeks.includes(week) ? 'checked' : ''}>
             <label for="${checkboxId}" class="week-checkbox-label">
                 <span class="week-number">${weekData.name}</span>
                 <span class="week-dates">${formatDateForDisplay(weekData.startDate)} - ${formatDateForDisplay(weekData.endDate)}</span>
-                <span class="week-days">${weekData.holiday ? 'إجازة' : `${weekData.days} أيام دراسية`}</span>
+                <span class="week-days">${weekData.days} أيام دراسية</span>
             </label>
         `;
         
         // إضافة حدث التغيير لمربع الاختيار
         const checkbox = checkboxItem.querySelector('input[type="checkbox"]');
-        if (!weekData.holiday) {
-            checkbox.addEventListener('change', function() {
-                updateWeekSelection(week, this.checked);
-            });
-        }
+        checkbox.addEventListener('change', function() {
+            updateWeekSelection(week, this.checked);
+        });
         
         container.appendChild(checkboxItem);
     }
@@ -1372,7 +1389,6 @@ function createWeekCheckboxes() {
 
 // تنسيق التاريخ للعرض
 function formatDateForDisplay(dateStr) {
-    if (dateStr === "إجازة") return dateStr;
     const parts = dateStr.split('/');
     return `${parts[1]}/${parts[2]}`;
 }
@@ -1419,7 +1435,7 @@ function updateSelectedWeeksDisplay() {
     }
     
     // تحديث حالة مربعات الاختيار
-    for (let week = 1; week <= 19; week++) {
+    for (let week = 1; week <= 18; week++) {
         const checkbox = document.getElementById(`week${week}`);
         if (checkbox) {
             checkbox.checked = selectedWeeks.includes(week);
@@ -1432,13 +1448,11 @@ function saveSelectedWeeks() {
     localStorage.setItem('teacherTracker_selectedWeeks', JSON.stringify(selectedWeeks));
 }
 
-// تحديد جميع الأسابيع (باستثناء الإجازات)
+// تحديد جميع الأسابيع
 function selectAllWeeks() {
     selectedWeeks = [];
-    for (let week = 1; week <= 19; week++) {
-        if (!studyWeeks[week].holiday) {
-            selectedWeeks.push(week);
-        }
+    for (let week = 1; week <= 18; week++) {
+        selectedWeeks.push(week);
     }
     updateSelectedWeeksDisplay();
     saveSelectedWeeks();
@@ -1461,7 +1475,7 @@ function selectFirstSemesterWeeks() {
 // تحديد نطاق من الأسابيع
 function selectWeeksRange(start, end) {
     for (let week = start; week <= end; week++) {
-        if (!studyWeeks[week].holiday && !selectedWeeks.includes(week)) {
+        if (!selectedWeeks.includes(week)) {
             selectedWeeks.push(week);
         }
     }
@@ -1505,19 +1519,188 @@ function randomAttendanceForSelectedWeeks() {
     alert("✅ تم إنشاء التحضير العشوائي للأسابيع المحددة!\n\nيمكنك تصدير التقرير باستخدام زر 'تصدير الأسابيع المحددة'");
 }
 
+// ======== تصدير الأسابيع المحددة إلى Excel ========
+
+// عرض/إخفاء مؤشر التحميل
+function showLoading(show) {
+    const spinner = document.getElementById('loadingSpinner');
+    if (spinner) {
+        spinner.style.display = show ? 'block' : 'none';
+    }
+}
+
 // تصدير الأسابيع المحددة إلى Excel
 function exportSelectedWeeks() {
     if (selectedWeeks.length === 0) {
         alert("⚠️ لم تحدد أي أسابيع!\n\nالرجاء اختيار أسبوع أو أكثر أولاً");
         return;
     }
-    
-    alert("✅ تم تصدير الأسابيع المحددة بنجاح!");
+
+    showLoading(true);
+
+    // محاكاة المعالجة
+    setTimeout(() => {
+        let tablesHTML = `<h2>تقرير التحضير للأسابيع المحددة</h2>`;
+        tablesHTML += `<h3>المعلم: فهد الخالدي - المادة: اللغة الإنجليزية</h3>`;
+        tablesHTML += `<h3>${document.getElementById('currentSemesterInfo').textContent}</h3>`;
+        tablesHTML += `<h3>المدرسة: سعيد بن العاص المتوسطة</h3>`;
+        tablesHTML += `<h3>تاريخ التصدير: ${formatGregorianDate(new Date())}</h3>`;
+
+        const weekNames = selectedWeeks.map(w => studyWeeks[w].name).join('، ');
+        tablesHTML += `<h3>الأسابيع: ${weekNames} (${selectedWeeks.length} أسابيع)</h3>`;
+
+        let totalWeeks = 0;
+        let totalDays = 0;
+        let totalStudentsAll = 0;
+        let totalPresentAll = 0;
+        let totalAbsentAll = 0;
+        let totalStarredAll = 0;
+
+        // إضافة جداول لكل أسبوع
+        selectedWeeks.forEach(weekNum => {
+            totalWeeks++;
+            const weekData = studyWeeks[weekNum];
+            totalDays += weekData.days;
+
+            tablesHTML += `<h3 style="background:#e8f5e9; padding:10px; margin-top:20px;">${weekData.name}</h3>`;
+            tablesHTML += `<p style="text-align:center;">${weekData.startDate} - ${weekData.endDate} (${weekData.days} أيام)</p>`;
+
+            // إضافة جداول لكل صف
+            for (const className in studentsData) {
+                const classSize = studentsData[className].length;
+                totalStudentsAll += classSize;
+
+                tablesHTML += `<h5>الصف ${className} (${classSize} طالب)</h5>`;
+                tablesHTML += `<table border="1" cellpadding="5" cellspacing="0" style="width:100%; border-collapse:collapse; margin-bottom:15px;">`;
+                tablesHTML += `<thead><tr>
+                    <th width="5%">م</th>
+                    <th>الاسم</th>
+                    <th width="8%">الحضور</th>
+                    <th width="8%">الواجبات</th>
+                    <th width="8%">المشروعات</th>
+                    <th width="8%">تطبيقات وأنشطة</th>
+                    <th width="8%">مشاركة</th>
+                    <th width="8%">⭐</th>
+                </tr></thead><tbody>`;
+
+                studentsData[className].forEach((student, index) => {
+                    const isStarred = isStudentStarred(className, student);
+                    if (isStarred) totalStarredAll++;
+
+                    tablesHTML += `<tr>`;
+                    tablesHTML += `<td>${index + 1}</td>`;
+                    tablesHTML += `<td>${student}</td>`;
+
+                    // إنشاء بيانات الحضور
+                    for (let i = 0; i < 5; i++) {
+                        let value = "✖";
+                        let bgColor = "#ffebee";
+                        
+                        if (isStarred) {
+                            // الطلاب المميزون: كل الخيارات ✓
+                            value = "✔";
+                            bgColor = "#e8f5e9";
+                            totalPresentAll++;
+                        } else {
+                            // الطلاب العاديون: 3 ✓ فقط بشكل عشوائي
+                            const seed = (index + 1) * weekNum;
+                            const randomPattern = [
+                                (seed % 5) < 3,
+                                ((seed + 1) % 5) < 3,
+                                ((seed + 2) % 5) < 3,
+                                ((seed + 3) % 5) < 3,
+                                ((seed + 4) % 5) < 3
+                            ];
+                            
+                            if (randomPattern[i]) {
+                                value = "✔";
+                                bgColor = "#e8f5e9";
+                                totalPresentAll++;
+                            } else {
+                                totalAbsentAll++;
+                            }
+                        }
+                        
+                        tablesHTML += `<td style="background-color:${bgColor};">${value}</td>`;
+                    }
+
+                    tablesHTML += `<td>${isStarred ? '⭐' : ''}</td>`;
+                    tablesHTML += `</tr>`;
+                });
+
+                tablesHTML += `</tbody></table>`;
+            }
+        });
+
+        // إضافة ملخص شامل
+        tablesHTML += `<h3 style="background:#e0f7fa; padding:10px; margin-top:20px;">ملخص شامل للأسابيع المحددة</h3>`;
+        tablesHTML += `<div style="padding:15px; background:#fff8e1; border-radius:5px; margin-bottom:20px;">
+            <strong>إجمالي جميع الأسابيع المحددة:</strong><br>
+            - عدد الأسابيع: ${totalWeeks} أسبوع<br>
+            - عدد الأيام: ${totalDays} يوم<br>
+            - إجمالي الطلاب: ${totalStudentsAll * selectedWeeks.length} حالة<br>
+            - إجمالي الحضور (✔): ${totalPresentAll} حالة<br>
+            - إجمالي الغياب (✖): ${totalAbsentAll} حالة<br>
+            - إجمالي المتميزين: ${totalStarredAll} طالب<br>
+            - نسبة الحضور: ${(totalPresentAll + totalAbsentAll) > 0 ? ((totalPresentAll / (totalPresentAll + totalAbsentAll)) * 100).toFixed(1) : 0}%
+        </div>`;
+
+        // إنشاء ملف Excel
+        let uri = 'data:application/vnd.ms-excel;base64,';
+        let template = `<html xmlns:o="urn:schemas-microsoft-com:office:office" 
+                       xmlns:x="urn:schemas-microsoft-com:office:excel" 
+                       xmlns="http://www.w3.org/TR/REC-html40">
+                       <head>
+                       <meta charset="UTF-8">
+                       <!--[if gte mso 9]>
+                       <xml>
+                       <x:ExcelWorkbook>
+                       <x:ExcelWorksheets>
+                       <x:ExcelWorksheet>
+                       <x:Name>تقرير الأسابيع</x:Name>
+                       <x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions>
+                       </x:ExcelWorksheet>
+                       </x:ExcelWorksheets>
+                       </x:ExcelWorkbook>
+                       </xml>
+                       <![endif]-->
+                       </head>
+                       <body dir="rtl">${tablesHTML}</body></html>`;
+
+        let link = document.createElement("a");
+        link.href = uri + btoa(unescape(encodeURIComponent(template)));
+        const weekRange = selectedWeeks.length === 1 ? 
+            `الأسبوع_${selectedWeeks[0]}` : 
+            `الأسابيع_${selectedWeeks[0]}_إلى_${selectedWeeks[selectedWeeks.length - 1]}`;
+        link.download = `تقرير_${weekRange}.xls`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        showLoading(false);
+
+        alert(`✅ تم تصدير التقرير بنجاح!\n\n📊 يحتوي على:\n- ${selectedWeeks.length} أسبوع\n- ${totalDays} يوم\n- ${totalStudentsAll * selectedWeeks.length} حالة حضور`);
+    }, 1000);
 }
 
 // تصدير جميع أسابيع الترم الأول
 function exportAllWeeks() {
-    alert("✅ تم تصدير جميع أسابيع الترم الأول بنجاح!");
+    // تحديد جميع أسابيع الترم الأول
+    const allWeeks = [];
+    for (let week = 1; week <= 18; week++) {
+        allWeeks.push(week);
+    }
+    
+    // حفظ الأسابيع الحالية مؤقتاً
+    const tempWeeks = [...selectedWeeks];
+    selectedWeeks = allWeeks;
+    updateSelectedWeeksDisplay();
+    
+    exportSelectedWeeks();
+    
+    // استعادة الأسابيع الأصلية
+    selectedWeeks = tempWeeks;
+    updateSelectedWeeksDisplay();
 }
 
 // ======== إدارة الطلاب ========
