@@ -246,17 +246,11 @@ input[type="password"], input[type="text"], select {
     background-color: #fffde7 !important;
 }
 
-.week-buttons-container {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    margin: 15px 0;
-}
-
-.semester-weeks {
+.week-checkboxes-container {
     background: white;
     border-radius: 8px;
     padding: 15px;
+    margin: 15px 0;
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
@@ -265,52 +259,66 @@ input[type="password"], input[type="text"], select {
     color: white;
     padding: 10px;
     border-radius: 5px;
-    margin-bottom: 10px;
+    margin-bottom: 15px;
     text-align: center;
 }
 
-.week-buttons-grid {
+.weeks-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-    gap: 8px;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px;
+    margin: 15px 0;
 }
 
-.week-button {
-    padding: 10px 5px;
-    background: #e0e0e0;
-    border: 2px solid #ddd;
+.week-checkbox-item {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    background: #f8f9fa;
     border-radius: 5px;
-    cursor: pointer;
-    font-weight: bold;
+    border: 1px solid #e0e0e0;
     transition: all 0.3s;
-    text-align: center;
-    position: relative;
 }
 
-.week-button:hover {
-    background: #d0d0d0;
-    transform: translateY(-2px);
+.week-checkbox-item:hover {
+    background: #e8f5e9;
+    border-color: #2a9d8f;
 }
 
-.week-button.selected {
-    background: #4CAF50 !important;
-    color: white !important;
-    border-color: #388E3C !important;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+.week-checkbox-item.holiday {
+    background: #fff3e0;
+    opacity: 0.7;
 }
 
-.week-button.holiday {
-    background: #ffcccc;
+.week-checkbox-item input[type="checkbox"] {
+    margin-left: 10px;
+    transform: scale(1.2);
+    cursor: pointer;
+}
+
+.week-checkbox-label {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+}
+
+.week-number {
+    font-size: 16px;
+    font-weight: bold;
+    color: #1a5276;
+}
+
+.week-dates {
+    font-size: 12px;
     color: #666;
-    cursor: not-allowed;
-    opacity: 0.6;
+    margin-top: 3px;
 }
 
-.week-button.empty {
-    background: #f5f5f5;
-    color: #999;
-    cursor: not-allowed;
-    border-style: dashed;
+.week-days {
+    font-size: 11px;
+    color: #888;
+    margin-top: 2px;
 }
 
 .selected-weeks-display {
@@ -336,19 +344,6 @@ input[type="password"], input[type="text"], select {
     gap: 10px;
     margin-bottom: 15px;
     flex-wrap: wrap;
-}
-
-.week-number {
-    font-size: 16px;
-    font-weight: bold;
-    display: block;
-}
-
-.week-dates {
-    font-size: 10px;
-    color: #666;
-    display: block;
-    margin-top: 2px;
 }
 
 .student-management {
@@ -402,12 +397,30 @@ input[type="password"], input[type="text"], select {
     100% { transform: rotate(360deg); }
 }
 
-.week-button:active {
-    transform: scale(0.98);
+.batch-selection {
+    background: #f5f5f5;
+    border-radius: 5px;
+    padding: 10px;
+    margin: 10px 0;
+}
+
+.batch-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+}
+
+.batch-buttons button {
+    background: #607d8b;
+    color: white;
+    font-size: 12px;
+    padding: 6px 12px;
 }
 
 @media print {
-    button, .admin-panel, .status-filter, .class-tabs, .week-buttons-container, 
+    button, .admin-panel, .status-filter, .class-tabs, .week-checkboxes-container, 
     .selected-weeks-display, .export-section, .student-management {
         display: none !important;
     }
@@ -518,20 +531,20 @@ input[type="password"], input[type="text"], select {
                 <button onclick="selectFirstSemesterWeeks()">📚 الترم الأول (1-19)</button>
             </div>
             
-            <div class="week-buttons-container">
-                <div class="semester-weeks">
-                    <div class="semester-title">الترم الأول (الأسابيع 1-19)</div>
-                    <div class="week-buttons-grid" id="firstSemesterWeeks">
-                        <!-- سيتم إنشاء أزرار الأسابيع 1-19 هنا -->
-                    </div>
+            <div class="batch-selection">
+                <strong>تحديد دفعات:</strong>
+                <div class="batch-buttons">
+                    <button onclick="selectWeeksRange(1, 5)">الأسابيع 1-5</button>
+                    <button onclick="selectWeeksRange(6, 10)">الأسابيع 6-10</button>
+                    <button onclick="selectWeeksRange(11, 15)">الأسابيع 11-15</button>
+                    <button onclick="selectWeeksRange(16, 19)">الأسابيع 16-19</button>
                 </div>
-                
-                <div class="semester-weeks">
-                    <div class="semester-title">الترم الثاني (سيتم إضافة الأسابيع لاحقاً)</div>
-                    <div class="week-buttons-grid" id="secondSemesterWeeks">
-                        <!-- سيتم إنشاء أزرار فارغة للترم الثاني -->
-                        <div class="week-button empty" title="سيتم إضافة الأسابيع لاحقاً">قيد الإضافة</div>
-                    </div>
+            </div>
+            
+            <div class="week-checkboxes-container">
+                <div class="semester-title">الترم الأول (الأسابيع 1-19)</div>
+                <div class="weeks-grid" id="weeksCheckboxesContainer">
+                    <!-- سيتم إنشاء مربعات اختيار الأسابيع هنا -->
                 </div>
             </div>
             
@@ -539,6 +552,10 @@ input[type="password"], input[type="text"], select {
                 <button onclick="randomAttendanceForSelectedWeeks()" style="background: #4CAF50; padding: 12px 24px; font-size: 16px;">
                     🎲 تحضير عشوائي للأسابيع المحددة
                 </button>
+            </div>
+            
+            <div style="text-align:center; margin-top:10px; font-size:12px; color:#666;">
+                ⭐ خاصية التحضير العشوائي: سيتم وضع ✓ لكل الخيارات للطلاب المتميزين (الذين لديهم نجمة ⭐)
             </div>
         </div>
         
@@ -637,7 +654,7 @@ input[type="password"], input[type="text"], select {
 </div>
 
 <script>
-// بيانات الطلاب لكل صف (محدثة حسب القائمة المقدمة)
+// بيانات الطلاب لكل صف
 const studentsData = {
     "3-1": [
         "إسماعيل محمد هاشم شفيق الرحمن",
@@ -755,25 +772,25 @@ const studentsData = {
 
 // بيانات الأسابيع الدراسية للترم الأول (1-19)
 const studyWeeks = {
-    1: { name: "الأسبوع 1", days: 5, startDate: "2025/08/24", endDate: "2025/08/28" },
-    2: { name: "الأسبوع 2", days: 5, startDate: "2025/08/31", endDate: "2025/09/04" },
-    3: { name: "الأسبوع 3", days: 5, startDate: "2025/09/07", endDate: "2025/09/11" },
-    4: { name: "الأسبوع 4", days: 5, startDate: "2025/09/14", endDate: "2025/09/18" },
-    5: { name: "الأسبوع 5", days: 5, startDate: "2025/09/21", endDate: "2025/09/25" },
-    6: { name: "الأسبوع 6", days: 5, startDate: "2025/09/28", endDate: "2025/10/02" },
-    7: { name: "الأسبوع 7", days: 5, startDate: "2025/10/05", endDate: "2025/10/09" },
-    8: { name: "الأسبوع 8", days: 4, startDate: "2025/10/13", endDate: "2025/10/16" },
-    9: { name: "الأسبوع 9", days: 5, startDate: "2025/10/19", endDate: "2025/10/23" },
-    10: { name: "الأسبوع 10", days: 5, startDate: "2025/10/26", endDate: "2025/10/30" },
-    11: { name: "الأسبوع 11", days: 5, startDate: "2025/11/02", endDate: "2025/11/06" },
-    12: { name: "الأسبوع 12", days: 5, startDate: "2025/11/09", endDate: "2025/11/13" },
-    13: { name: "الأسبوع 13", days: 5, startDate: "2025/11/16", endDate: "2025/11/20" },
-    14: { name: "الأسبوع 14", days: 0, startDate: "إجازة", endDate: "إجازة", holiday: true },
-    15: { name: "الأسبوع 15", days: 4, startDate: "2025/11/30", endDate: "2025/12/03" },
-    16: { name: "الأسبوع 16", days: 4, startDate: "2025/12/08", endDate: "2025/12/11" },
-    17: { name: "الأسبوع 17", days: 5, startDate: "2025/12/14", endDate: "2025/12/18" },
-    18: { name: "الأسبوع 18", days: 5, startDate: "2025/12/21", endDate: "2025/12/25" },
-    19: { name: "الأسبوع 19", days: 5, startDate: "2025/12/28", endDate: "2026/01/01" }
+    1: { name: "الأسبوع 1", days: 5, startDate: "2025/08/24", endDate: "2025/08/28", hijri: "1447/03/01 - 1447/03/05" },
+    2: { name: "الأسبوع 2", days: 5, startDate: "2025/08/31", endDate: "2025/09/04", hijri: "1447/03/08 - 1447/03/12" },
+    3: { name: "الأسبوع 3", days: 5, startDate: "2025/09/07", endDate: "2025/09/11", hijri: "1447/03/15 - 1447/03/19" },
+    4: { name: "الأسبوع 4", days: 5, startDate: "2025/09/14", endDate: "2025/09/18", hijri: "1447/03/22 - 1447/03/26" },
+    5: { name: "الأسبوع 5", days: 5, startDate: "2025/09/21", endDate: "2025/09/25", hijri: "1447/03/29 - 1447/04/02" },
+    6: { name: "الأسبوع 6", days: 5, startDate: "2025/09/28", endDate: "2025/10/02", hijri: "1447/04/05 - 1447/04/09" },
+    7: { name: "الأسبوع 7", days: 5, startDate: "2025/10/05", endDate: "2025/10/09", hijri: "1447/04/12 - 1447/04/16" },
+    8: { name: "الأسبوع 8", days: 4, startDate: "2025/10/13", endDate: "2025/10/16", hijri: "1447/04/20 - 1447/04/23" },
+    9: { name: "الأسبوع 9", days: 5, startDate: "2025/10/19", endDate: "2025/10/23", hijri: "1447/04/26 - 1447/04/30" },
+    10: { name: "الأسبوع 10", days: 5, startDate: "2025/10/26", endDate: "2025/10/30", hijri: "1447/05/03 - 1447/05/07" },
+    11: { name: "الأسبوع 11", days: 5, startDate: "2025/11/02", endDate: "2025/11/06", hijri: "1447/05/10 - 1447/05/14" },
+    12: { name: "الأسبوع 12", days: 5, startDate: "2025/11/09", endDate: "2025/11/13", hijri: "1447/05/17 - 1447/05/21" },
+    13: { name: "الأسبوع 13", days: 5, startDate: "2025/11/16", endDate: "2025/11/20", hijri: "1447/05/24 - 1447/05/28" },
+    14: { name: "الأسبوع 14", days: 0, startDate: "إجازة", endDate: "إجازة", hijri: "إجازة", holiday: true },
+    15: { name: "الأسبوع 15", days: 4, startDate: "2025/11/30", endDate: "2025/12/03", hijri: "1447/06/09 - 1447/06/12" },
+    16: { name: "الأسبوع 16", days: 4, startDate: "2025/12/08", endDate: "2025/12/11", hijri: "1447/06/17 - 1447/06/20" },
+    17: { name: "الأسبوع 17", days: 5, startDate: "2025/12/14", endDate: "2025/12/18", hijri: "1447/06/23 - 1447/06/27" },
+    18: { name: "الأسبوع 18", days: 5, startDate: "2025/12/21", endDate: "2025/12/25", hijri: "1447/07/01 - 1447/07/05" },
+    19: { name: "الأسبوع 19", days: 5, startDate: "2025/12/28", endDate: "2026/01/01", hijri: "1447/07/08 - 1447/07/12" }
 };
 
 // حالة الإدارة
@@ -821,11 +838,10 @@ function initPage() {
     
     createClassTabs();
     createTables();
-    createWeekButtons();
+    createWeekCheckboxes();
     updateStudentCount();
     updateDateDisplay();
     refreshStudentList();
-    updateWeekButtons(); // تأكد من تحديث أزرار الأسابيع عند التحميل
     
     // تحديث التاريخ تلقائياً
     updateCurrentDate();
@@ -874,91 +890,75 @@ function getHijriMonthName(month) {
     return hijriMonths[month - 1] || "";
 }
 
-// إنشاء أزرار الأسابيع
-function createWeekButtons() {
-    const firstSemesterContainer = document.getElementById('firstSemesterWeeks');
-    firstSemesterContainer.innerHTML = '';
+// إنشاء مربعات اختيار الأسابيع
+function createWeekCheckboxes() {
+    const container = document.getElementById('weeksCheckboxesContainer');
+    container.innerHTML = '';
     
-    // إنشاء أزرار للأسابيع 1-19
+    // إنشاء مربعات اختيار للأسابيع 1-19
     for (let week = 1; week <= 19; week++) {
         const weekData = studyWeeks[week];
-        const button = document.createElement('button');
-        button.className = 'week-button';
-        button.id = `week-${week}`;
-        button.setAttribute('data-week', week);
+        const checkboxItem = document.createElement('div');
+        checkboxItem.className = 'week-checkbox-item';
+        checkboxItem.id = `week-checkbox-${week}`;
         
         if (weekData.holiday) {
-            button.classList.add('holiday');
-            button.innerHTML = `
-                <span class="week-number">${week}</span>
-                <span class="week-dates">إجازة</span>
-            `;
-            button.title = `${weekData.name} - إجازة`;
-            button.disabled = true;
-        } else {
-            button.innerHTML = `
-                <span class="week-number">${week}</span>
+            checkboxItem.classList.add('holiday');
+        }
+        
+        const checkboxId = `week${week}`;
+        
+        checkboxItem.innerHTML = `
+            <input type="checkbox" id="${checkboxId}" class="week-checkbox" 
+                   data-week="${week}" 
+                   ${weekData.holiday ? 'disabled' : ''}
+                   ${selectedWeeks.includes(week) ? 'checked' : ''}>
+            <label for="${checkboxId}" class="week-checkbox-label">
+                <span class="week-number">${weekData.name}</span>
                 <span class="week-dates">${formatDateForDisplay(weekData.startDate)} - ${formatDateForDisplay(weekData.endDate)}</span>
-                <span style="font-size:10px; color:#666;">(${weekData.days} أيام)</span>
-            `;
-            button.title = `${weekData.name} - ${weekData.days} أيام دراسية`;
-            
-            // إضافة حدث النقر بشكل صحيح
-            button.addEventListener('click', function() {
-                toggleWeekSelection(week);
+                <span class="week-days">${weekData.holiday ? 'إجازة' : `${weekData.days} أيام دراسية`}</span>
+            </label>
+        `;
+        
+        // إضافة حدث التغيير لمربع الاختيار
+        const checkbox = checkboxItem.querySelector('input[type="checkbox"]');
+        if (!weekData.holiday) {
+            checkbox.addEventListener('change', function() {
+                updateWeekSelection(week, this.checked);
             });
         }
         
-        firstSemesterContainer.appendChild(button);
+        container.appendChild(checkboxItem);
     }
     
-    updateWeekButtons();
-    updateSelectedWeeksDisplay(); // تحديث العرض بعد إنشاء الأزرار
+    updateSelectedWeeksDisplay();
 }
 
 // تنسيق التاريخ للعرض
 function formatDateForDisplay(dateStr) {
     if (dateStr === "إجازة") return dateStr;
     const parts = dateStr.split('/');
-    return `${parts[1]}/${parts[2].slice(-2)}`;
+    return `${parts[1]}/${parts[2]}`;
 }
 
-// تبديل اختيار الأسبوع
-function toggleWeekSelection(week) {
-    console.log('Toggle week:', week); // للمساعدة في التصحيح
-    
-    const index = selectedWeeks.indexOf(week);
-    if (index === -1) {
-        selectedWeeks.push(week);
-        console.log('Added week:', week, 'Selected weeks:', selectedWeeks);
+// تحديث اختيار الأسبوع
+function updateWeekSelection(week, isChecked) {
+    if (isChecked) {
+        if (!selectedWeeks.includes(week)) {
+            selectedWeeks.push(week);
+        }
     } else {
-        selectedWeeks.splice(index, 1);
-        console.log('Removed week:', week, 'Selected weeks:', selectedWeeks);
+        const index = selectedWeeks.indexOf(week);
+        if (index !== -1) {
+            selectedWeeks.splice(index, 1);
+        }
     }
     
     // ترتيب الأسابيع تصاعدياً
     selectedWeeks.sort((a, b) => a - b);
     
-    updateWeekButtons();
     updateSelectedWeeksDisplay();
     saveSelectedWeeks();
-}
-
-// تحديث مظهر أزرار الأسابيع
-function updateWeekButtons() {
-    console.log('Updating week buttons, selected weeks:', selectedWeeks);
-    
-    for (let week = 1; week <= 19; week++) {
-        const button = document.getElementById(`week-${week}`);
-        if (button && !button.disabled) {
-            if (selectedWeeks.includes(week)) {
-                button.classList.add('selected');
-                console.log('Week', week, 'is selected');
-            } else {
-                button.classList.remove('selected');
-            }
-        }
-    }
 }
 
 // تحديث عرض الأسابيع المحددة
@@ -981,6 +981,14 @@ function updateSelectedWeeksDisplay() {
         displayElement.textContent = `${weekNames}`;
         countElement.textContent = `${selectedWeeks.length} أسبوع | ${totalDays} يوم`;
     }
+    
+    // تحديث حالة مربعات الاختيار
+    for (let week = 1; week <= 19; week++) {
+        const checkbox = document.getElementById(`week${week}`);
+        if (checkbox) {
+            checkbox.checked = selectedWeeks.includes(week);
+        }
+    }
 }
 
 // حفظ الأسابيع المحددة
@@ -996,7 +1004,6 @@ function selectAllWeeks() {
             selectedWeeks.push(week);
         }
     }
-    updateWeekButtons();
     updateSelectedWeeksDisplay();
     saveSelectedWeeks();
     alert(`تم تحديد جميع أسابيع الترم الأول (${selectedWeeks.length} أسبوع)`);
@@ -1005,7 +1012,6 @@ function selectAllWeeks() {
 // مسح جميع الأسابيع
 function clearSelectedWeeks() {
     selectedWeeks = [];
-    updateWeekButtons();
     updateSelectedWeeksDisplay();
     saveSelectedWeeks();
     alert("تم مسح جميع الأسابيع المحددة");
@@ -1014,6 +1020,22 @@ function clearSelectedWeeks() {
 // تحديد أسابيع الترم الأول
 function selectFirstSemesterWeeks() {
     selectAllWeeks();
+}
+
+// تحديد نطاق من الأسابيع
+function selectWeeksRange(start, end) {
+    for (let week = start; week <= end; week++) {
+        if (!studyWeeks[week].holiday && !selectedWeeks.includes(week)) {
+            selectedWeeks.push(week);
+        }
+    }
+    
+    // ترتيب الأسابيع تصاعدياً
+    selectedWeeks.sort((a, b) => a - b);
+    
+    updateSelectedWeeksDisplay();
+    saveSelectedWeeks();
+    alert(`تم إضافة الأسابيع ${start}-${end} إلى المحددة`);
 }
 
 // تحديث معلومات الفصل الدراسي المعروضة
@@ -1653,7 +1675,7 @@ function toggle(cell) {
     }
 }
 
-// تبديل النجمة - تم التعديل لإزالة التلميح بكلمة المرور
+// تبديل النجمة
 function toggleStar(cell) {
     if (adminActive) {
         cell.innerHTML = cell.innerHTML === "☆" ? "⭐" : "☆";
@@ -1668,7 +1690,7 @@ function toggleStar(cell) {
     }
 }
 
-// التحقق من كلمة المرور - تم التعديل لإزالة التلميح بكلمة المرور
+// التحقق من كلمة المرور
 function checkAdmin() {
     const pass = document.getElementById("adminPass").value;
     if (pass === "1406") {
