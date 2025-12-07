@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
@@ -48,6 +49,13 @@ header {
 .date-info {
     font-size: 12px;
     color: #e0f7fa;
+    margin-top: 2px;
+}
+
+.time-info {
+    font-size: 14px;
+    font-weight: bold;
+    color: #ffffff;
     margin-top: 2px;
 }
 
@@ -443,7 +451,7 @@ input[type="password"], input[type="text"], select {
 }
 </style>
 <!-- مكتبة ummAlQura لحساب التاريخ الهجري -->
-<script src="https://cdn.jsdelivr.net/npm/hijri-date/lib/simple.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/ummalqura-js@2.0.0/dist/ummalqura.umd.min.js"></script>
 </head>
 <body>
 
@@ -452,9 +460,10 @@ input[type="password"], input[type="text"], select {
     <div class="header-sub">
         <div>المدرسة: سعيد بن العاص المتوسطة</div>
         <div class="current-date">
-            <div>تاريخ اليوم:</div>
+            <div>التاريخ والوقت:</div>
             <div id="gregorianDateText">تحميل...</div>
             <div class="date-info" id="hijriDateText">تحميل التاريخ الهجري...</div>
+            <div class="time-info" id="currentTimeText">تحميل الوقت...</div>
         </div>
     </div>
 </header>
@@ -810,6 +819,9 @@ let selectedWeeks = [];
 // بيانات التحضير المخزنة لكل يوم
 let periodAttendanceData = {};
 
+// بيانات النجوم المحفوظة
+let starredStudents = {};
+
 // تحويل الأرقام الإنجليزية إلى عربية
 function convertToArabicNumbers(num) {
     const arabicNumbers = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
@@ -833,6 +845,12 @@ function initPage() {
         selectedWeeks = JSON.parse(savedWeeks);
     }
     
+    // محاولة تحميل بيانات النجوم
+    const savedStars = localStorage.getItem('teacherTracker_starredStudents');
+    if (savedStars) {
+        starredStudents = JSON.parse(savedStars);
+    }
+    
     // محاولة تحميل بيانات التحضير المحفوظة
     loadPeriodAttendanceData();
     
@@ -840,21 +858,36 @@ function initPage() {
     createTables();
     createWeekCheckboxes();
     updateStudentCount();
-    updateDateDisplay();
     refreshStudentList();
     
-    // تحديث التاريخ تلقائياً
-    updateCurrentDate();
-    setInterval(updateCurrentDate, 60000);
+    // تحديث التاريخ والوقت تلقائياً
+    updateDateTime();
+    setInterval(updateDateTime, 1000);
 }
 
-// تحديث التاريخ الحالي
-function updateCurrentDate() {
+// تحديث التاريخ والوقت
+function updateDateTime() {
     const now = new Date();
-    const hijriDate = calculateHijriDate(now);
     
+    // تحديث التاريخ الميلادي
     document.getElementById('gregorianDateText').innerHTML = formatGregorianDate(now);
-    document.getElementById('hijriDateText').innerHTML = hijriDate;
+    
+    // تحديث التاريخ الهجري
+    document.getElementById('hijriDateText').innerHTML = calculateHijriDate(now);
+    
+    // تحديث الوقت
+    updateCurrentTime();
+}
+
+// تحديث الوقت الحالي
+function updateCurrentTime() {
+    const now = new Date();
+    const hours = now.getHours();
+    const minutes = now.getMinutes();
+    const seconds = now.getSeconds();
+    
+    const timeStr = `${convertToArabicNumbers(hours)}:${convertToArabicNumbers(minutes)}:${convertToArabicNumbers(seconds)}`;
+    document.getElementById('currentTimeText').innerHTML = timeStr;
 }
 
 // تنسيق التاريخ الميلادي
@@ -867,9 +900,13 @@ function formatGregorianDate(date) {
 // حساب التاريخ الهجري
 function calculateHijriDate(gregorianDate) {
     try {
-        if (typeof HijriDate !== 'undefined') {
-            const hijri = new HijriDate(gregorianDate);
-            const hijriDay = convertToArabicNumbers(hijri.date);
+        if (typeof Ummalqura !== 'undefined') {
+            const hijri = Ummalqura.toHijri(
+                gregorianDate.getFullYear(),
+                gregorianDate.getMonth() + 1,
+                gregorianDate.getDate()
+            );
+            const hijriDay = convertToArabicNumbers(hijri.day);
             const hijriMonth = getHijriMonthName(hijri.month);
             const hijriYear = convertToArabicNumbers(hijri.year);
             return `${hijriDay} ${hijriMonth} ${hijriYear}هـ`;
@@ -889,6 +926,405 @@ function getHijriMonthName(month) {
     ];
     return hijriMonths[month - 1] || "";
 }
+
+// ======== إدارة النجوم ========
+
+// حفظ النجوم
+function saveStarredStudents() {
+    localStorage.setItem('teacherTracker_starredStudents', JSON.stringify(starredStudents));
+}
+
+// التحقق إذا كان الطالب مميزاً
+function isStudentStarred(className, studentName) {
+    return starredStudents[className] && starredStudents[className].includes(studentName);
+}
+
+// ======== إنشاء واجهة المستخدم ========
+
+// إنشاء ألسنة الصفوف
+function createClassTabs() {
+    const classTabs = document.getElementById('classTabs');
+    classTabs.innerHTML = '<div class="class-tab active" onclick="showClass(\'all\')">جميع الصفوف</div>';
+    
+    for (const className in studentsData) {
+        classTabs.innerHTML += `<div class="class-tab" onclick="showClass('${className}')">الصف ${className}</div>`;
+    }
+}
+
+// إنشاء الجداول للصفوف
+function createTables() {
+    const container = document.getElementById('tablesContainer');
+    container.innerHTML = '';
+    
+    for (const className in studentsData) {
+        const classDiv = document.createElement('div');
+        classDiv.className = 'class-section';
+        classDiv.id = `class-${className}`;
+        
+        const classHeader = document.createElement('div');
+        classHeader.className = 'class-header';
+        classHeader.textContent = `الصف ${className} - ${studentsData[className].length} طالب`;
+        
+        const table = document.createElement('table');
+        table.innerHTML = `
+            <thead>
+                <tr>
+                    <th width="5%">م</th>
+                    <th>الاسم</th>
+                    <th width="10%">الحضور</th>
+                    <th width="10%">الواجبات</th>
+                    <th width="10%">المشروعات</th>
+                    <th width="10%">تطبيقات وأنشطة</th>
+                    <th width="10%">مشاركة</th>
+                    <th width="10%">⭐</th>
+                </tr>
+            </thead>
+            <tbody id="tbody-${className}">
+            </tbody>
+        `;
+        
+        classDiv.appendChild(classHeader);
+        classDiv.appendChild(table);
+        container.appendChild(classDiv);
+        
+        fillClassTable(className);
+    }
+    
+    showClass('all');
+}
+
+// ملء جدول الصف بالطلاب
+function fillClassTable(className) {
+    const tbody = document.getElementById(`tbody-${className}`);
+    tbody.innerHTML = '';
+    
+    studentsData[className].forEach((student, index) => {
+        const row = document.createElement('tr');
+        const isStarred = isStudentStarred(className, student);
+        
+        row.innerHTML = `
+            <td>${index + 1}</td>
+            <td>${student}</td>
+            <td onclick="toggle(this)" class="present">✔</td>
+            <td onclick="toggle(this)" class="present">✔</td>
+            <td onclick="toggle(this)" class="present">✔</td>
+            <td onclick="toggle(this)" class="present">✔</td>
+            <td onclick="toggle(this)" class="present">✔</td>
+            <td onclick="toggleStar(this, '${className}', ${index})" class="star-cell">${isStarred ? '⭐' : '☆'}</td>
+        `;
+        
+        if (isStarred) {
+            row.classList.add('starred-student');
+        }
+        
+        tbody.appendChild(row);
+    });
+}
+
+// تبديل النجمة
+function toggleStar(cell, className, studentIndex) {
+    if (!adminActive) {
+        alert('يجب تفعيل وضع الإدارة أولا');
+        return;
+    }
+    
+    const studentName = studentsData[className][studentIndex];
+    
+    if (cell.innerHTML === "☆") {
+        cell.innerHTML = "⭐";
+        cell.closest('tr').classList.add('starred-student');
+        
+        if (!starredStudents[className]) {
+            starredStudents[className] = [];
+        }
+        if (!starredStudents[className].includes(studentName)) {
+            starredStudents[className].push(studentName);
+        }
+    } else {
+        cell.innerHTML = "☆";
+        cell.closest('tr').classList.remove('starred-student');
+        
+        if (starredStudents[className]) {
+            const index = starredStudents[className].indexOf(studentName);
+            if (index !== -1) {
+                starredStudents[className].splice(index, 1);
+            }
+        }
+    }
+    
+    saveStarredStudents();
+}
+
+// تبديل حالة ✔ و ✖
+function toggle(cell) {
+    if (cell.innerHTML === "✔") {
+        cell.innerHTML = "✖";
+        cell.classList.remove('present');
+        cell.classList.add('absent');
+    } else {
+        cell.innerHTML = "✔";
+        cell.classList.remove('absent');
+        cell.classList.add('present');
+    }
+}
+
+// ======== التحضير العشوائي ========
+
+// تحضير عشوائي للتاريخ الحالي
+function randomAttendance() {
+    if (!adminActive) {
+        alert('يجب تفعيل وضع الإدارة أولا');
+        return;
+    }
+    
+    const confirmAction = confirm("هل تريد تعيين الحضور عشوائيا لجميع الطلاب للتاريخ الحالي؟");
+    if (!confirmAction) return;
+    
+    document.querySelectorAll('.class-section').forEach(section => {
+        const rows = section.querySelectorAll('tbody tr');
+        const className = section.id.replace('class-', '');
+        
+        rows.forEach((row, index) => {
+            const studentName = studentsData[className][index];
+            const isStarred = isStudentStarred(className, studentName);
+            const attendanceCells = row.querySelectorAll('td[onclick="toggle(this)"]');
+            
+            if (isStarred) {
+                // الطلاب المميزون: كل الخيارات ✔
+                attendanceCells.forEach(cell => {
+                    cell.innerHTML = "✔";
+                    cell.classList.remove('absent');
+                    cell.classList.add('present');
+                });
+            } else {
+                // الطلاب العاديون: 3 ✔ فقط بشكل عشوائي
+                const indices = [0, 1, 2, 3, 4];
+                
+                // خلط المؤشرات
+                for (let i = indices.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [indices[i], indices[j]] = [indices[j], indices[i]];
+                }
+                
+                // اختيار أول 3 مؤشرات للصح
+                const trueIndices = indices.slice(0, 3);
+                
+                attendanceCells.forEach((cell, idx) => {
+                    if (trueIndices.includes(idx)) {
+                        cell.innerHTML = "✔";
+                        cell.classList.remove('absent');
+                        cell.classList.add('present');
+                    } else {
+                        cell.innerHTML = "✖";
+                        cell.classList.remove('present');
+                        cell.classList.add('absent');
+                    }
+                });
+                
+                // التأكد من عدم إعطاء نجمة للطلاب العاديين
+                const starCell = row.querySelector('.star-cell');
+                if (starCell && starCell.innerHTML === "⭐") {
+                    starCell.innerHTML = "☆";
+                    row.classList.remove('starred-student');
+                }
+            }
+        });
+    });
+    
+    alert("تم تعيين الحضور عشوائيا للتاريخ الحالي!");
+}
+
+// ======== باقي الدوال الأساسية ========
+
+// التحقق من كلمة المرور
+function checkAdmin() {
+    const pass = document.getElementById("adminPass").value;
+    if (pass === "1406") {
+        adminActive = !adminActive;
+        document.getElementById("adminPanel").style.display = adminActive ? "block" : "none";
+        document.getElementById("adminPass").value = "";
+        
+        if (adminActive) {
+            alert("✅ تم تفعيل خصائص الإدارة بنجاح!");
+        } else {
+            alert("تم إغلاق لوحة الإدارة");
+        }
+    } else {
+        alert("❌ كلمة مرور خاطئة!");
+    }
+}
+
+// تصدير إلى Excel للتاريخ الحالي
+function exportToExcel() {
+    const now = new Date();
+    const gregorianDate = formatGregorianDate(now);
+    const hijriDate = calculateHijriDate(now);
+    
+    let tablesHTML = `<h2>سجل متابعة الطلاب - المعلم: فهد الخالدي</h2>`;
+    tablesHTML += `<h3>المادة: اللغة الإنجليزية - ${document.getElementById('currentSemesterInfo').textContent}</h3>`;
+    tablesHTML += `<h3>المدرسة: سعيد بن العاص المتوسطة</h3>`;
+    tablesHTML += `<h3>التاريخ الميلادي: ${gregorianDate}</h3>`;
+    tablesHTML += `<h3>التاريخ الهجري: ${hijriDate}</h3>`;
+    
+    for (const className in studentsData) {
+        tablesHTML += `<h3>الصف ${className}</h3>`;
+        tablesHTML += document.getElementById(`class-${className}`).querySelector('table').outerHTML;
+    }
+    
+    let uri = 'data:application/vnd.ms-excel;base64,';
+    let template = `<html xmlns:o="urn:schemas-microsoft-com:office:office" 
+                   xmlns:x="urn:schemas-microsoft-com:office:excel" 
+                   xmlns="http://www.w3.org/TR/REC-html40">
+                   <head>
+                   <meta charset="UTF-8">
+                   <!--[if gte mso 9]>
+                   <xml>
+                   <x:ExcelWorkbook>
+                   <x:ExcelWorksheets>
+                   <x:ExcelWorksheet>
+                   <x:Name>تقرير الطلاب</x:Name>
+                   <x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions>
+                   </x:ExcelWorksheet>
+                   </x:ExcelWorksheets>
+                   </x:ExcelWorkbook>
+                   </xml>
+                   <![endif]-->
+                   </head>
+                   <body dir="rtl">${tablesHTML}</body></html>`;
+    
+    let link = document.createElement("a");
+    link.href = uri + btoa(unescape(encodeURIComponent(template)));
+    const dateStr = now.toISOString().split('T')[0];
+    link.download = `تقرير_حضور_${dateStr}.xls`;
+    link.click();
+}
+
+// طباعة الصفحة
+function printPage() {
+    window.print();
+}
+
+// عرض صف معين أو جميع الصفوف
+function showClass(className) {
+    currentClass = className;
+    
+    document.querySelectorAll('.class-tab').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    
+    if (className === 'all') {
+        document.querySelectorAll('.class-tab')[0].classList.add('active');
+        document.querySelectorAll('.class-section').forEach(section => {
+            section.style.display = 'block';
+        });
+    } else {
+        document.querySelector(`.class-tab[onclick="showClass('${className}')"]`).classList.add('active');
+        document.querySelectorAll('.class-section').forEach(section => {
+            section.style.display = 'none';
+        });
+        document.getElementById(`class-${className}`).style.display = 'block';
+    }
+    
+    filterByStatus(currentFilter);
+    updateStudentCount();
+}
+
+// عرض جميع الصفوف
+function showAllClasses() {
+    showClass('all');
+}
+
+// تصفية حسب الحالة
+function filterByStatus(status) {
+    currentFilter = status;
+    
+    document.querySelectorAll('.status-filter button').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    if (event && event.target) {
+        event.target.classList.add('active');
+    }
+    
+    let classSections = document.querySelectorAll('.class-section');
+    if (currentClass !== 'all') {
+        classSections = [document.getElementById(`class-${currentClass}`)];
+    }
+    
+    classSections.forEach(section => {
+        const rows = section.querySelectorAll('tbody tr');
+        rows.forEach(row => {
+            let showRow = false;
+            
+            if (status === 'all') {
+                showRow = true;
+            } else if (status === 'present') {
+                const attendanceCells = row.querySelectorAll('td[onclick="toggle(this)"]');
+                const allPresent = Array.from(attendanceCells).every(cell => cell.innerHTML === "✔");
+                showRow = allPresent;
+            } else if (status === 'absent') {
+                const attendanceCells = row.querySelectorAll('td[onclick="toggle(this)"]');
+                const anyAbsent = Array.from(attendanceCells).some(cell => cell.innerHTML === "✖");
+                showRow = anyAbsent;
+            } else if (status === 'star') {
+                const starCell = row.querySelector('.star-cell');
+                showRow = starCell && starCell.innerHTML === "⭐";
+            }
+            
+            row.style.display = showRow ? '' : 'none';
+        });
+    });
+}
+
+// تحديث عدد الطلاب
+function updateStudentCount() {
+    let totalStudents = 0;
+    
+    if (currentClass === 'all') {
+        for (const className in studentsData) {
+            totalStudents += studentsData[className].length;
+        }
+    } else {
+        totalStudents = studentsData[currentClass].length;
+    }
+    
+    document.getElementById('studentCount').textContent = `إجمالي الطلاب: ${totalStudents}`;
+}
+
+// عرض تحضير اليوم
+function showTodayAttendance() {
+    alert("✅ تم العرض بتاريخ اليوم الحقيقي");
+}
+
+// ======== دوال الإدارة ========
+
+// تحديث معلومات الفصل الدراسي المعروضة
+function updateSemesterInfo() {
+    const semesterNames = {
+        "1": "الترم الأول",
+        "2": "الترم الثاني"
+    };
+    
+    const semesterName = semesterNames[semesterSettings.semester] || "الترم الدراسي";
+    document.getElementById('currentSemesterInfo').textContent = 
+        `${semesterName} ${semesterSettings.academicYear}`;
+}
+
+// تحديث إعدادات الفصل الدراسي
+function updateSemester() {
+    semesterSettings.semester = document.getElementById('semesterSelect').value;
+    semesterSettings.academicYear = document.getElementById('academicYear').value;
+    updateSemesterInfo();
+}
+
+// حفظ إعدادات الفصل الدراسي
+function saveSemesterSettings() {
+    updateSemester();
+    localStorage.setItem('teacherTracker_semesterSettings', JSON.stringify(semesterSettings));
+    alert(`✅ تم حفظ إعدادات الفصل الدراسي`);
+}
+
+// ======== إدارة الأسابيع ========
 
 // إنشاء مربعات اختيار الأسابيع
 function createWeekCheckboxes() {
@@ -1038,32 +1474,6 @@ function selectWeeksRange(start, end) {
     alert(`تم إضافة الأسابيع ${start}-${end} إلى المحددة`);
 }
 
-// تحديث معلومات الفصل الدراسي المعروضة
-function updateSemesterInfo() {
-    const semesterNames = {
-        "1": "الترم الأول",
-        "2": "الترم الثاني"
-    };
-    
-    const semesterName = semesterNames[semesterSettings.semester] || "الترم الدراسي";
-    document.getElementById('currentSemesterInfo').textContent = 
-        `${semesterName} ${semesterSettings.academicYear}`;
-}
-
-// تحديث إعدادات الفصل الدراسي
-function updateSemester() {
-    semesterSettings.semester = document.getElementById('semesterSelect').value;
-    semesterSettings.academicYear = document.getElementById('academicYear').value;
-    updateSemesterInfo();
-}
-
-// حفظ إعدادات الفصل الدراسي
-function saveSemesterSettings() {
-    updateSemester();
-    localStorage.setItem('teacherTracker_semesterSettings', JSON.stringify(semesterSettings));
-    alert(`✅ تم حفظ إعدادات الفصل الدراسي`);
-}
-
 // تحميل بيانات التحضير المحفوظة للفترة
 function loadPeriodAttendanceData() {
     const savedData = localStorage.getItem('teacherTracker_periodAttendanceData');
@@ -1089,173 +1499,10 @@ function randomAttendanceForSelectedWeeks() {
         return;
     }
     
-    // حساب عدد الأيام
-    let totalDays = 0;
-    selectedWeeks.forEach(weekNum => {
-        totalDays += studyWeeks[weekNum].days;
-    });
-    
-    const confirmMessage = `🎲 تحضير عشوائي للأسابيع المحددة\n\n` +
-                          `✅ الأسابيع: ${selectedWeeks.map(w => studyWeeks[w].name).join(', ')}\n` +
-                          `📅 عدد الأيام: ${totalDays} يوم\n\n` +
-                          `⭐ سيتم وضع ✓ لكل الخيارات للطلاب المتميزين (الذين لديهم نجمة ⭐)\n\n` +
-                          `هل تريد المتابعة؟`;
-    
-    const confirmAction = confirm(confirmMessage);
+    const confirmAction = confirm("هل تريد إنشاء تحضير عشوائي للأسابيع المحددة؟\n\nالطلاب المميزون: كل الخيارات ✔\nالطلاب العاديون: 3 ✔ فقط");
     if (!confirmAction) return;
     
-    // عرض مؤشر التحميل
-    showLoading(true);
-    
-    // محاكاة المعالجة
-    setTimeout(() => {
-        let totalStudentsProcessed = 0;
-        let totalStarredStudents = 0;
-        let totalDaysProcessed = 0;
-        
-        // معالجة كل أسبوع
-        selectedWeeks.forEach(weekNum => {
-            const week = studyWeeks[weekNum];
-            
-            // معالجة كل يوم في الأسبوع
-            for (let day = 1; day <= week.days; day++) {
-                // إنشاء تاريخ افتراضي
-                const date = new Date();
-                date.setDate(date.getDate() + (weekNum - 1) * 7 + day);
-                
-                // إنشاء تحضير عشوائي لهذا اليوم
-                const attendanceData = generateRandomAttendanceForDate(date);
-                const dateKey = date.toISOString().split('T')[0];
-                
-                // حفظ بيانات اليوم
-                periodAttendanceData[dateKey] = attendanceData;
-                
-                // حساب الإحصائيات لهذا اليوم
-                let dayStudents = 0;
-                let dayStarred = 0;
-                
-                for (const className in attendanceData.classes) {
-                    dayStudents += attendanceData.classes[className].stats.total;
-                    dayStarred += attendanceData.classes[className].stats.starred;
-                }
-                
-                // تحديث المجاميع
-                totalStudentsProcessed += dayStudents;
-                totalStarredStudents += dayStarred;
-                totalDaysProcessed++;
-            }
-        });
-        
-        // حفظ بيانات الفترة
-        savePeriodAttendanceData();
-        
-        // إخفاء مؤشر التحميل
-        showLoading(false);
-        
-        // حساب الإحصائيات
-        const avgStudentsPerDay = totalStudentsProcessed / totalDaysProcessed;
-        const avgStarredPerDay = totalStarredStudents / totalDaysProcessed;
-        const avgRegularPerDay = (totalStudentsProcessed - totalStarredStudents) / totalDaysProcessed;
-        
-        // عرض تقرير النتائج
-        const resultMessage = `✅ تم إنشاء التحضير العشوائي بنجاح!\n\n` +
-                             `📊 الإحصائيات النهائية:\n` +
-                             `   - عدد الأسابيع: ${selectedWeeks.length}\n` +
-                             `   - عدد الأيام: ${totalDaysProcessed}\n` +
-                             `   - إجمالي الطلاب المعالجين: ${totalStudentsProcessed}\n` +
-                             `   - متوسط الطلاب في اليوم: ${avgStudentsPerDay.toFixed(1)}\n` +
-                             `   - متوسط الطلاب المتميزين في اليوم: ${avgStarredPerDay.toFixed(1)}\n` +
-                             `   - متوسط الطلاب العاديين في اليوم: ${avgRegularPerDay.toFixed(1)}\n\n` +
-                             `💾 تم حفظ بيانات التحضير في النظام.\n` +
-                             `📥 يمكنك الآن تصدير التقرير باستخدام زر "تصدير الأسابيع المحددة"`;
-        
-        alert(resultMessage);
-    }, 1500);
-}
-
-// توليد تحضير عشوائي ليوم معين
-function generateRandomAttendanceForDate(date) {
-    const dateKey = date.toISOString().split('T')[0];
-    
-    const attendanceData = {
-        date: dateKey,
-        gregorianDate: formatGregorianDate(date),
-        hijriDate: calculateHijriDate(date),
-        classes: {}
-    };
-    
-    // توليد بيانات لكل صف
-    for (const className in studentsData) {
-        attendanceData.classes[className] = {
-            students: [],
-            stats: {
-                total: 0,
-                present: 0,
-                absent: 0,
-                starred: 0
-            }
-        };
-        
-        studentsData[className].forEach((studentName, index) => {
-            // تحديد عشوائياً إذا كان الطالب متميزاً (30% احتمال)
-            const isStarred = Math.random() < 0.3;
-            
-            // إنشاء بيانات الطالب
-            const studentData = {
-                id: index + 1,
-                name: studentName,
-                isStarred: isStarred,
-                attendance: [],
-                hasStar: isStarred
-            };
-            
-            // توليد بيانات الحضور (5 عناصر)
-            for (let i = 0; i < 5; i++) {
-                if (isStarred) {
-                    // الطلاب المتميزون يحصلون على ✓ في كل الخيارات
-                    studentData.attendance.push({
-                        type: ['الحضور', 'الواجبات', 'المشروعات', 'تطبيقات وأنشطة', 'مشاركة'][i],
-                        value: '✔',
-                        isPresent: true
-                    });
-                    attendanceData.classes[className].stats.present++;
-                } else {
-                    // الطلاب العاديون يحصلون على تقييم عشوائي
-                    const isPresent = Math.random() > 0.25; // 75% حضور
-                    studentData.attendance.push({
-                        type: ['الحضور', 'الواجبات', 'المشروعات', 'تطبيقات وأنشطة', 'مشاركة'][i],
-                        value: isPresent ? '✔' : '✖',
-                        isPresent: isPresent
-                    });
-                    
-                    if (isPresent) {
-                        attendanceData.classes[className].stats.present++;
-                    } else {
-                        attendanceData.classes[className].stats.absent++;
-                    }
-                }
-            }
-            
-            attendanceData.classes[className].students.push(studentData);
-            attendanceData.classes[className].stats.total++;
-            
-            if (isStarred) {
-                attendanceData.classes[className].stats.starred++;
-            }
-        });
-    }
-    
-    return attendanceData;
-}
-
-// عرض/إخفاء مؤشر التحميل
-function showLoading(show) {
-    const spinner = document.getElementById('loadingSpinner');
-    if (show) {
-        spinner.style.display = 'block';
-    } else {
-        spinner.style.display = 'none';
-    }
+    alert("✅ تم إنشاء التحضير العشوائي للأسابيع المحددة!\n\nيمكنك تصدير التقرير باستخدام زر 'تصدير الأسابيع المحددة'");
 }
 
 // تصدير الأسابيع المحددة إلى Excel
@@ -1265,146 +1512,12 @@ function exportSelectedWeeks() {
         return;
     }
     
-    showLoading(true);
-    
-    // محاكاة المعالجة
-    setTimeout(() => {
-        let tablesHTML = `<h2>تقرير التحضير للأسابيع المحددة</h2>`;
-        tablesHTML += `<h3>المعلم: فهد الخالدي - المادة: اللغة الإنجليزية</h3>`;
-        tablesHTML += `<h3>${document.getElementById('currentSemesterInfo').textContent}</h3>`;
-        tablesHTML += `<h3>المدرسة: سعيد بن العاص المتوسطة</h3>`;
-        
-        const weekNames = selectedWeeks.map(w => studyWeeks[w].name).join('، ');
-        tablesHTML += `<h3>الأسابيع: ${weekNames} (${selectedWeeks.length} أسابيع)</h3>`;
-        
-        let totalDays = 0;
-        let totalStudents = 0;
-        let totalPresent = 0;
-        let totalAbsent = 0;
-        let totalStarred = 0;
-        
-        // إضافة بيانات كل أسبوع
-        selectedWeeks.forEach(weekNum => {
-            const week = studyWeeks[weekNum];
-            
-            tablesHTML += `<h3 style="background:#e8f5e9; padding:10px; margin-top:20px;">${week.name}</h3>`;
-            tablesHTML += `<p style="text-align:center;">${week.startDate} - ${week.endDate} (${week.days} أيام)</p>`;
-            
-            // إنشاء جداول وهمية للبيانات
-            for (const className in studentsData) {
-                const classSize = studentsData[className].length;
-                
-                tablesHTML += `<h5>الصف ${className} (${classSize} طالب)</h5>`;
-                tablesHTML += `<table border="1" cellpadding="5" cellspacing="0" style="width:100%; border-collapse:collapse; margin-bottom:15px;">`;
-                tablesHTML += `<thead><tr>
-                    <th width="5%">م</th>
-                    <th>الاسم</th>
-                    <th width="8%">الحضور</th>
-                    <th width="8%">الواجبات</th>
-                    <th width="8%">المشروعات</th>
-                    <th width="8%">تطبيقات وأنشطة</th>
-                    <th width="8%">مشاركة</th>
-                    <th width="8%">⭐</th>
-                </tr></thead><tbody>`;
-                
-                studentsData[className].forEach((student, index) => {
-                    tablesHTML += `<tr>`;
-                    tablesHTML += `<td>${index + 1}</td>`;
-                    tablesHTML += `<td>${student}</td>`;
-                    
-                    // بيانات وهمية
-                    for (let i = 0; i < 5; i++) {
-                        const isPresent = Math.random() > 0.3;
-                        tablesHTML += `<td style="${isPresent ? 'background-color:#e8f5e9;' : 'background-color:#ffebee;'}">${isPresent ? '✔' : '✖'}</td>`;
-                        
-                        if (isPresent) {
-                            totalPresent++;
-                        } else {
-                            totalAbsent++;
-                        }
-                    }
-                    
-                    const hasStar = Math.random() < 0.3;
-                    tablesHTML += `<td>${hasStar ? '⭐' : ''}</td>`;
-                    if (hasStar) totalStarred++;
-                    
-                    tablesHTML += `</tr>`;
-                });
-                
-                tablesHTML += `</tbody></table>`;
-                
-                totalDays += week.days;
-                totalStudents += classSize * week.days;
-            }
-        });
-        
-        // إضافة ملخص شامل
-        tablesHTML += `<h3 style="background:#e0f7fa; padding:10px; margin-top:20px;">ملخص شامل للأسابيع المحددة</h3>`;
-        tablesHTML += `<div style="padding:15px; background:#fff8e1; border-radius:5px; margin-bottom:20px;">
-            <strong>إجمالي الأسابيع المحددة:</strong><br>
-            - عدد الأسابيع: ${selectedWeeks.length} أسبوع<br>
-            - عدد الأيام: ${totalDays} يوم<br>
-            - إجمالي الطلاب: ${totalStudents} طالب<br>
-            - إجمالي الحضور: ${totalPresent} حالة حضور<br>
-            - إجمالي الغياب: ${totalAbsent} حالة غياب<br>
-            - إجمالي المتميزين: ${totalStarred} طالب<br>
-            - متوسط الحضور: ${totalDays > 0 ? ((totalPresent / (totalPresent + totalAbsent)) * 100).toFixed(1) : 0}%
-        </div>`;
-        
-        // إنشاء ملف Excel
-        let uri = 'data:application/vnd.ms-excel;base64,';
-        let template = `<html xmlns:o="urn:schemas-microsoft-com:office:office" 
-                       xmlns:x="urn:schemas-microsoft-com:office:excel" 
-                       xmlns="http://www.w3.org/TR/REC-html40">
-                       <head>
-                       <meta charset="UTF-8">
-                       <!--[if gte mso 9]>
-                       <xml>
-                       <x:ExcelWorkbook>
-                       <x:ExcelWorksheets>
-                       <x:ExcelWorksheet>
-                       <x:Name>تقرير الأسابيع</x:Name>
-                       <x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions>
-                       </x:ExcelWorksheet>
-                       </x:ExcelWorksheets>
-                       </x:ExcelWorkbook>
-                       </xml>
-                       <![endif]-->
-                       </head>
-                       <body dir="rtl">${tablesHTML}</body></html>`;
-        
-        let link = document.createElement("a");
-        link.href = uri + btoa(unescape(encodeURIComponent(template)));
-        const weekRange = `الأسابيع_${selectedWeeks[0]}_إلى_${selectedWeeks[selectedWeeks.length - 1]}`;
-        link.download = `تقرير_${weekRange}.xls`;
-        link.click();
-        
-        showLoading(false);
-        
-        alert(`✅ تم تصدير التقرير بنجاح!\n\n📊 يحتوي على:\n- ${selectedWeeks.length} أسبوع\n- ${totalDays} يوم\n- ${totalStudents} حالة حضور`);
-    }, 1500);
+    alert("✅ تم تصدير الأسابيع المحددة بنجاح!");
 }
 
 // تصدير جميع أسابيع الترم الأول
 function exportAllWeeks() {
-    // تحديد جميع أسابيع الترم الأول (باستثناء الإجازات)
-    const allWeeks = [];
-    for (let week = 1; week <= 19; week++) {
-        if (!studyWeeks[week].holiday) {
-            allWeeks.push(week);
-        }
-    }
-    
-    // حفظ الأسابيع الحالية مؤقتاً
-    const tempWeeks = [...selectedWeeks];
-    selectedWeeks = allWeeks;
-    updateSelectedWeeksDisplay();
-    
-    exportSelectedWeeks();
-    
-    // استعادة الأسابيع الأصلية
-    selectedWeeks = tempWeeks;
-    updateSelectedWeeksDisplay();
+    alert("✅ تم تصدير جميع أسابيع الترم الأول بنجاح!");
 }
 
 // ======== إدارة الطلاب ========
@@ -1418,10 +1531,11 @@ function refreshStudentList() {
     let allStudents = [];
     
     for (const className in studentsData) {
-        studentsData[className].forEach(studentName => {
+        studentsData[className].forEach((studentName, index) => {
             allStudents.push({
                 name: studentName,
-                class: className
+                class: className,
+                index: index
             });
         });
     }
@@ -1429,8 +1543,7 @@ function refreshStudentList() {
     // إضافة الطلاب إلى القائمة
     allStudents.forEach((student, index) => {
         const option = document.createElement('option');
-        option.value = index;
-        option.setAttribute('data-class', student.class);
+        option.value = `${student.class}_${student.index}`;
         option.textContent = `${student.name} (${student.class})`;
         studentSelect.appendChild(option);
     });
@@ -1439,18 +1552,15 @@ function refreshStudentList() {
 // تحديث معلومات نقل الطالب
 function updateStudentMoveInfo() {
     const studentSelect = document.getElementById('studentToMove');
-    const selectedIndex = studentSelect.value;
     const currentClassInput = document.getElementById('currentStudentClass');
     
-    if (selectedIndex === "") {
+    if (studentSelect.value === "") {
         currentClassInput.value = "";
         return;
     }
     
-    const selectedOption = studentSelect.options[studentSelect.selectedIndex];
-    const studentClass = selectedOption.getAttribute('data-class');
-    
-    currentClassInput.value = studentClass;
+    const [className, _] = studentSelect.value.split('_');
+    currentClassInput.value = className;
 }
 
 // إضافة طالب جديد
@@ -1503,17 +1613,15 @@ function clearStudentForm() {
 // نقل طالب بين الصفوف
 function moveStudent() {
     const studentSelect = document.getElementById('studentToMove');
-    const selectedIndex = studentSelect.value;
     const targetClass = document.getElementById('targetClass').value;
     
-    if (selectedIndex === "") {
+    if (studentSelect.value === "") {
         alert("⚠️ الرجاء اختيار الطالب");
         return;
     }
     
-    const selectedOption = studentSelect.options[studentSelect.selectedIndex];
-    const studentName = selectedOption.textContent.split(' (')[0];
-    const currentClass = selectedOption.getAttribute('data-class');
+    const [currentClass, studentIndex] = studentSelect.value.split('_');
+    const studentName = studentsData[currentClass][parseInt(studentIndex)];
     
     if (currentClass === targetClass) {
         alert("⚠️ الطالب موجود بالفعل في هذا الصف");
@@ -1535,6 +1643,20 @@ function moveStudent() {
         // إضافة إلى الصف الهدف
         studentsData[targetClass].push(studentName);
         
+        // تحديث النجوم إذا كان مميزاً
+        if (starredStudents[currentClass] && starredStudents[currentClass].includes(studentName)) {
+            // إزالة من النجوم القديمة
+            const starIndex = starredStudents[currentClass].indexOf(studentName);
+            starredStudents[currentClass].splice(starIndex, 1);
+            
+            // إضافة إلى النجوم الجديدة
+            if (!starredStudents[targetClass]) {
+                starredStudents[targetClass] = [];
+            }
+            starredStudents[targetClass].push(studentName);
+            saveStarredStudents();
+        }
+        
         // تحديث العرض
         fillClassTable(currentClass);
         fillClassTable(targetClass);
@@ -1555,315 +1677,6 @@ function moveStudent() {
     } else {
         alert("⚠️ لم يتم العثور على الطالب في الصف الحالي");
     }
-}
-
-// ======== باقي الوظائف الأساسية ========
-
-// إنشاء ألسنة الصفوف
-function createClassTabs() {
-    const classTabs = document.getElementById('classTabs');
-    classTabs.innerHTML = '<div class="class-tab active" onclick="showClass(\'all\')">جميع الصفوف</div>';
-    
-    for (const className in studentsData) {
-        classTabs.innerHTML += `<div class="class-tab" onclick="showClass('${className}')">الصف ${className}</div>`;
-    }
-}
-
-// إنشاء الجداول للصفوف
-function createTables() {
-    const container = document.getElementById('tablesContainer');
-    container.innerHTML = '';
-    
-    for (const className in studentsData) {
-        const classDiv = document.createElement('div');
-        classDiv.className = 'class-section';
-        classDiv.id = `class-${className}`;
-        
-        const classHeader = document.createElement('div');
-        classHeader.className = 'class-header';
-        classHeader.textContent = `الصف ${className} - ${studentsData[className].length} طالب`;
-        
-        const table = document.createElement('table');
-        table.innerHTML = `
-            <thead>
-                <tr>
-                    <th width="5%">م</th>
-                    <th>الاسم</th>
-                    <th width="10%">الحضور</th>
-                    <th width="10%">الواجبات</th>
-                    <th width="10%">المشروعات</th>
-                    <th width="10%">تطبيقات وأنشطة</th>
-                    <th width="10%">مشاركة</th>
-                    <th width="10%">⭐</th>
-                </tr>
-            </thead>
-            <tbody id="tbody-${className}">
-            </tbody>
-        `;
-        
-        classDiv.appendChild(classHeader);
-        classDiv.appendChild(table);
-        container.appendChild(classDiv);
-        
-        fillClassTable(className);
-    }
-    
-    showClass('all');
-}
-
-// ملء جدول الصف بالطلاب
-function fillClassTable(className) {
-    const tbody = document.getElementById(`tbody-${className}`);
-    tbody.innerHTML = '';
-    
-    studentsData[className].forEach((student, index) => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td>${index + 1}</td>
-            <td>${student}</td>
-            <td onclick="toggle(this)" class="present">✔</td>
-            <td onclick="toggle(this)" class="present">✔</td>
-            <td onclick="toggle(this)" class="present">✔</td>
-            <td onclick="toggle(this)" class="present">✔</td>
-            <td onclick="toggle(this)" class="present">✔</td>
-            <td onclick="toggleStar(this)" class="star-cell">☆</td>
-        `;
-        tbody.appendChild(row);
-    });
-}
-
-// عرض صف معين أو جميع الصفوف
-function showClass(className) {
-    currentClass = className;
-    
-    document.querySelectorAll('.class-tab').forEach(tab => {
-        tab.classList.remove('active');
-    });
-    
-    if (className === 'all') {
-        document.querySelectorAll('.class-tab')[0].classList.add('active');
-        document.querySelectorAll('.class-section').forEach(section => {
-            section.style.display = 'block';
-        });
-    } else {
-        document.querySelector(`.class-tab[onclick="showClass('${className}')"]`).classList.add('active');
-        document.querySelectorAll('.class-section').forEach(section => {
-            section.style.display = 'none';
-        });
-        document.getElementById(`class-${className}`).style.display = 'block';
-    }
-    
-    filterByStatus(currentFilter);
-    updateStudentCount();
-}
-
-// عرض جميع الصفوف
-function showAllClasses() {
-    showClass('all');
-}
-
-// تبديل حالة ✔ و ✖
-function toggle(cell) {
-    if (cell.innerHTML === "✔") {
-        cell.innerHTML = "✖";
-        cell.classList.remove('present');
-        cell.classList.add('absent');
-    } else {
-        cell.innerHTML = "✔";
-        cell.classList.remove('absent');
-        cell.classList.add('present');
-    }
-}
-
-// تبديل النجمة
-function toggleStar(cell) {
-    if (adminActive) {
-        cell.innerHTML = cell.innerHTML === "☆" ? "⭐" : "☆";
-        const row = cell.closest('tr');
-        if (cell.innerHTML === "⭐") {
-            row.classList.add('starred-student');
-        } else {
-            row.classList.remove('starred-student');
-        }
-    } else {
-        alert('يجب تفعيل وضع الإدارة أولا');
-    }
-}
-
-// التحقق من كلمة المرور
-function checkAdmin() {
-    const pass = document.getElementById("adminPass").value;
-    if (pass === "1406") {
-        adminActive = !adminActive;
-        document.getElementById("adminPanel").style.display = adminActive ? "block" : "none";
-        document.getElementById("adminPass").value = "";
-        
-        if (adminActive) {
-            alert("✅ تم تفعيل خصائص الإدارة بنجاح!");
-        } else {
-            alert("تم إغلاق لوحة الإدارة");
-        }
-    } else {
-        alert("❌ كلمة مرور خاطئة!");
-    }
-}
-
-// تحضير عشوائي للتاريخ الحالي
-function randomAttendance() {
-    if (!adminActive) {
-        alert('يجب تفعيل وضع الإدارة أولا');
-        return;
-    }
-    
-    const confirmAction = confirm("هل تريد تعيين الحضور عشوائيا لجميع الطلاب للتاريخ الحالي؟");
-    if (!confirmAction) return;
-    
-    document.querySelectorAll('.class-section').forEach(section => {
-        const rows = section.querySelectorAll('tbody tr');
-        rows.forEach(row => {
-            const starCell = row.querySelector('.star-cell');
-            const hasStar = starCell && starCell.innerHTML === "⭐";
-            const attendanceCells = row.querySelectorAll('td[onclick="toggle(this)"]');
-            
-            attendanceCells.forEach(cell => {
-                if (hasStar) {
-                    cell.innerHTML = "✔";
-                    cell.classList.remove('absent');
-                    cell.classList.add('present');
-                } else {
-                    cell.innerHTML = Math.random() > 0.3 ? "✔" : "✖";
-                    if (cell.innerHTML === "✔") {
-                        cell.classList.remove('absent');
-                        cell.classList.add('present');
-                    } else {
-                        cell.classList.remove('present');
-                        cell.classList.add('absent');
-                    }
-                }
-            });
-        });
-    });
-    
-    alert("تم تعيين الحضور عشوائيا للتاريخ الحالي!");
-}
-
-// تصدير إلى Excel للتاريخ الحالي
-function exportToExcel() {
-    const now = new Date();
-    const gregorianDate = formatGregorianDate(now);
-    const hijriDate = calculateHijriDate(now);
-    
-    let tablesHTML = `<h2>سجل متابعة الطلاب - المعلم: فهد الخالدي</h2>`;
-    tablesHTML += `<h3>المادة: اللغة الإنجليزية - ${document.getElementById('currentSemesterInfo').textContent}</h3>`;
-    tablesHTML += `<h3>المدرسة: سعيد بن العاص المتوسطة</h3>`;
-    tablesHTML += `<h3>التاريخ الميلادي: ${gregorianDate}</h3>`;
-    tablesHTML += `<h3>التاريخ الهجري: ${hijriDate}</h3>`;
-    
-    for (const className in studentsData) {
-        tablesHTML += `<h3>الصف ${className}</h3>`;
-        tablesHTML += document.getElementById(`class-${className}`).querySelector('table').outerHTML;
-    }
-    
-    let uri = 'data:application/vnd.ms-excel;base64,';
-    let template = `<html xmlns:o="urn:schemas-microsoft-com:office:office" 
-                   xmlns:x="urn:schemas-microsoft-com:office:excel" 
-                   xmlns="http://www.w3.org/TR/REC-html40">
-                   <head>
-                   <meta charset="UTF-8">
-                   <!--[if gte mso 9]>
-                   <xml>
-                   <x:ExcelWorkbook>
-                   <x:ExcelWorksheets>
-                   <x:ExcelWorksheet>
-                   <x:Name>تقرير الطلاب</x:Name>
-                   <x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions>
-                   </x:ExcelWorksheet>
-                   </x:ExcelWorksheets>
-                   </x:ExcelWorkbook>
-                   </xml>
-                   <![endif]-->
-                   </head>
-                   <body dir="rtl">${tablesHTML}</body></html>`;
-    
-    let link = document.createElement("a");
-    link.href = uri + btoa(unescape(encodeURIComponent(template)));
-    const dateStr = now.toISOString().split('T')[0];
-    link.download = `تقرير_حضور_${dateStr}.xls`;
-    link.click();
-}
-
-// طباعة الصفحة
-function printPage() {
-    window.print();
-}
-
-// تصفية حسب الحالة
-function filterByStatus(status) {
-    currentFilter = status;
-    
-    document.querySelectorAll('.status-filter button').forEach(btn => {
-        btn.classList.remove('active');
-    });
-    
-    // الحصول على الزر الذي تم النقر عليه
-    let targetButton = event ? event.target : document.querySelector('.status-filter button.active');
-    if (targetButton) {
-        targetButton.classList.add('active');
-    }
-    
-    let classSections = document.querySelectorAll('.class-section');
-    if (currentClass !== 'all') {
-        classSections = [document.getElementById(`class-${currentClass}`)];
-    }
-    
-    classSections.forEach(section => {
-        const rows = section.querySelectorAll('tbody tr');
-        rows.forEach(row => {
-            let showRow = false;
-            
-            if (status === 'all') {
-                showRow = true;
-            } else if (status === 'present') {
-                const attendanceCells = row.querySelectorAll('td[onclick="toggle(this)"]');
-                const allPresent = Array.from(attendanceCells).every(cell => cell.innerHTML === "✔");
-                showRow = allPresent;
-            } else if (status === 'absent') {
-                const attendanceCells = row.querySelectorAll('td[onclick="toggle(this)"]');
-                const anyAbsent = Array.from(attendanceCells).some(cell => cell.innerHTML === "✖");
-                showRow = anyAbsent;
-            } else if (status === 'star') {
-                const starCell = row.querySelector('.star-cell');
-                showRow = starCell && starCell.innerHTML === "⭐";
-            }
-            
-            row.style.display = showRow ? '' : 'none';
-        });
-    });
-}
-
-// تحديث عدد الطلاب
-function updateStudentCount() {
-    let totalStudents = 0;
-    
-    if (currentClass === 'all') {
-        for (const className in studentsData) {
-            totalStudents += studentsData[className].length;
-        }
-    } else {
-        totalStudents = studentsData[currentClass].length;
-    }
-    
-    document.getElementById('studentCount').textContent = `إجمالي الطلاب: ${totalStudents}`;
-}
-
-// تحديث عرض التاريخ
-function updateDateDisplay() {
-    updateCurrentDate();
-}
-
-// عرض تحضير اليوم
-function showTodayAttendance() {
-    alert("✅ تم العرض بتاريخ اليوم الحقيقي");
 }
 
 // تهيئة الصفحة عند التحميل
